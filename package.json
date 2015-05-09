@@ -1,0 +1,31 @@
+{
+  "name": "react-native-udp",
+  "version": "0.0.1",
+  "description": "node's dgram API for react-native",
+  "main": "./dgram.js",
+  "scripts": {
+    "start": "exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tradle/react-native-udp.git"
+  },
+  "keywords": [
+    "react-component",
+    "reactnative",
+    "react-native",
+    "dgram",
+    "udp",
+    "sockets",
+    "ios"
+  ],
+  "author": "Mark Vayngrib <mark.vayngrib@lablz.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tradle/react-native-udp/issues"
+  },
+  "homepage": "https://github.com/tradle/react-native-udp",
+  "dependencies": {
+    "react-native": "^0.4.2"
+  }
+}
