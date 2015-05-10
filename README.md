@@ -13,7 +13,7 @@ This module is used by [Tradle](https://github.com/tradle)
 npm install --save react-native-udp
 ```
 
-* Drag RCTUDP.xcodeproj from node_modules/react-native-udp into your XCode project. Click on the project in XCode, go to Build Phases, then Link Binary With Libraries and add libReactUDP.a
+* Drag UdpSockets.xcodeproj from node_modules/react-native-udp into your XCode project. Click on the project in XCode, go to Build Phases, then Link Binary With Libraries and add libUdpSockets.a
 
 Buckle up, Dorothy
 
@@ -53,10 +53,11 @@ socket.once('listening', function() {
 socket.on('message', function(msg, rinfo) {
   console.log('message was received', msg)
 })
+```
 
 ### Note
 
-If you want to send and receive node Buffer objects, you'll have to "npm install buffer" and set it as a global for RCTUDP to pick it up:
+If you want to send and receive node Buffer objects, you'll have to "npm install buffer" and set it as a global for UdpSockets to pick it up:
 
 ```js
 global.Buffer = global.Buffer || require('buffer').Buffer
@@ -68,6 +69,8 @@ add select tests from node's tests for dgram
 
 ## Contributors
 
+[Mark Vayngrib](https://github.com/mvayngrib)  
+[Ellen Katsnelson](https://github.com/pgmemk)  
 [Tradle, Inc.](https://github.com/tradle/about/wiki)
 
 PR's welcome!
