@@ -2,9 +2,7 @@
 
 node's [dgram](https://nodejs.org/api/dgram.html) API in React Native
 
-## This module is used by [Tradle](https://github.com/tradle)
-
-PR's welcome!
+This module is used by [Tradle](https://github.com/tradle)
 
 ## Install
 
@@ -63,6 +61,12 @@ If you want to send and receive node Buffer objects, you'll have to "npm install
 global.Buffer = global.Buffer || require('buffer').Buffer
 ```
 
+### TODO
+
+add select tests from node's tests for dgram
+
 ## Contributors
 
 [Tradle, Inc.](https://github.com/tradle/about/wiki)
+
+PR's welcome!
