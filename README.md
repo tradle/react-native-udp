@@ -35,6 +35,7 @@ _only if you want to write require('dgram') in your javascript_
 
 _see/run index.ios.js for a complete example, but basically it's just like dgram_
 
+```js
 var dgram = require('dgram')
 // OR, if not shimming via package.json "browser" field:
 // var dgram = require('UdpSockets') 
