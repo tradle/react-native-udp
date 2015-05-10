@@ -12,6 +12,10 @@ var {
   View,
 } = React;
 
+// require('./test/simple/test-dgram-address')
+// require('./test/simple/test-dgram-bind-default-address')
+// require('./test/simple/test-dgram-bind-shared-ports')
+
 function randomPort() {
   return Math.random() * 65536 | 0
 }

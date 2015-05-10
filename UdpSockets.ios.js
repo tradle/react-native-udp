@@ -1,14 +1,14 @@
 
 /**
- * @providesModule RCTUDP
+ * @providesModule UdpSockets
  * @flow
  */
 
-var RCTSocket = require('RCTUDPSocket')
+var UdpSocket = require('UdpSocket')
 
 module.exports = {
   createSocket: function(type) {
-    return new RCTSocket({
+    return new UdpSocket({
       type: type
     })
   }

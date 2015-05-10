@@ -6,7 +6,7 @@
 //
 
 /**
- * @providesModule RCTUDPSocket
+ * @providesModule UdpSocket
  * @flow
  */
 
@@ -20,7 +20,7 @@ var {
 var mixInEventEmitter = require('mixInEventEmitter')
 var DeviceEventEmitter = require('RCTDeviceEventEmitter')
 var NativeModules = require('NativeModules')
-var sockets = NativeModules.UDP // just UDP for now
+var sockets = NativeModules.UdpSockets
 var noop = function () {}
 var instances = 0
 var STATE = {
@@ -61,13 +61,19 @@ class RCTSocket extends Component {
 
   bind(port, address, callback) {
     var self = this
+
+    if (this._state !== STATE.UNBOUND) throw new Error('Socket is already bound')
+
     if (typeof address === 'function') {
       callback = address
       address = undefined
     }
 
-    // address = address || '0.0.0.0' //'127.0.0.1'
-    if (callback) this.once('listening', callback)
+    if (!address) address = '0.0.0.0'
+
+    if (!port) port = 0
+
+    if (callback) this.once('listening', callback.bind(this))
 
     this._state = STATE.BINDING
     this._debug('binding, address:', address, 'port:', port)
@@ -80,6 +86,7 @@ class RCTSocket extends Component {
         return self.emit('error', err)
       }
 
+      self._debug('bound to address:', addr.address, 'port:', addr.port)
       self._address = addr.address
       self._port = addr.port
       self._state = STATE.BOUND

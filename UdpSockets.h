@@ -7,12 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "RCTUDPClient.h"
+#import <Availability.h>
+#import "GCDAsyncUdpSocket.h"
+#import "UdpSocketClient.h"
 #import "RCTBridgeModule.h"
 #import "RCTBridge.h"
 #import "RCTEventDispatcher.h"
 
-@interface RCTUDP : NSObject<SocketClientDelegate, RCTBridgeModule>
+@interface UdpSockets : NSObject<SocketClientDelegate, RCTBridgeModule>
 
 @property(retain, nonatomic)NSMutableDictionary *clients;
 

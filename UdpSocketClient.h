@@ -25,15 +25,15 @@ enum RCTUDPError
 
 typedef enum RCTUDPError RCTUDPError;
 
-@class RCTUDPClient;
+@class UdpSocketClient;
 
 @protocol SocketClientDelegate <NSObject>
 
-- (void)onData:(RCTUDPClient*) client data:(NSData *)data host:(NSString*) host port:(uint16_t) port;
+- (void)onData:(UdpSocketClient*) client data:(NSData *)data host:(NSString*) host port:(uint16_t) port;
 
 @end
 
-@interface RCTUDPClient : NSObject
+@interface UdpSocketClient : NSObject
 
 @property (nonatomic, retain) NSString* id;
 @property (nonatomic, retain) NSString* host;

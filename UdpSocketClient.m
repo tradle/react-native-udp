@@ -8,13 +8,13 @@
 
 #import <netinet/in.h>
 #import <arpa/inet.h>
-#import "RCTUDPClient.h"
+#import "UdpSocketClient.h"
 #import "RCTBridgeModule.h"
 #import "GCDAsyncUdpSocket.h"
 
 NSString *const RCTUDPErrorDomain = @"RCTUDPErrorDomain";
 
-@interface RCTUDPClient()
+@interface UdpSocketClient()
 {
 @private
   uint16_t _port;
@@ -29,7 +29,7 @@ NSString *const RCTUDPErrorDomain = @"RCTUDPErrorDomain";
 
 @end
 
-@implementation RCTUDPClient
+@implementation UdpSocketClient
 
 + (id)socketClientWithConfig:(id<SocketClientDelegate>)delegate
 {
@@ -66,14 +66,14 @@ NSString *const RCTUDPErrorDomain = @"RCTUDPErrorDomain";
   if (address) {
     struct sockaddr_in ip;
     ip.sin_family = AF_INET;
-    ip.sin_port = htons(6003);
+    ip.sin_port = htons(_port);
     inet_pton(AF_INET, [address cStringUsingEncoding:NSASCIIStringEncoding], &ip.sin_addr);
 
     NSData * hostAndPort = [NSData dataWithBytes:&ip length:sizeof(ip)];
     result = [_udpSocket bindToAddress:hostAndPort error:error];
   }
   else {
-    result = [_udpSocket bindToPort:port error:error];
+    result = [_udpSocket bindToPort:_port error:error];
   }
 
   return result && [_udpSocket beginReceiving:error];
