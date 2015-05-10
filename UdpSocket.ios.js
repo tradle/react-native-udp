@@ -31,12 +31,9 @@ var STATE = {
 
 class RCTSocket extends Component {
   id: String;
-
-  _state: STATE.UNBOUND;
-
-  _address: undefined;
-
-  _port: undefined;
+  _state: Integer;
+  _address: String;
+  _port: Integer;
 
   constructor(props) {
     super(props)
@@ -48,6 +45,7 @@ class RCTSocket extends Component {
     // ensure compatibility with node's EventEmitter
     if (!this.on) this.on = this.addListener.bind(this)
 
+    this._state = STATE.UNBOUND
     sockets.createSocket(this.id, {
       type: props.type || 'udp4'
     }) // later
@@ -259,4 +257,5 @@ function toByteArray(obj) {
 
   return new Uint8Array(uint);
 }
+
 module.exports = RCTSocket
