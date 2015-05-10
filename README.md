@@ -39,7 +39,7 @@ _see/run index.ios.js for a complete example, but basically it's just like dgram
 
 var dgram = require('dgram')
 // OR, if not shimming via package.json "browser" field:
-// var dgram = require('RCTUDP') 
+// var dgram = require('UdpSockets') 
 var socket = dgram.createSocket('udp4')
 socket.bind(12345)
 socket.once('listening', function() {
