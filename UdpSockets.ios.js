@@ -4,7 +4,7 @@
  * @flow
  */
 
-var UdpSocket = require('UdpSocket')
+var UdpSocket = require('./UdpSocket.ios')
 
 module.exports = {
   createSocket: function(type) {

@@ -13,14 +13,9 @@
 'use strict';
 
 var React = require('react-native')
-var {
-  Component
-} = React
-
 var mixInEventEmitter = require('mixInEventEmitter')
 var DeviceEventEmitter = require('RCTDeviceEventEmitter')
-var NativeModules = require('NativeModules')
-var sockets = NativeModules.UdpSockets
+var Sockets = require('NativeModules').UdpSockets
 var noop = function () {}
 var instances = 0
 var STATE = {
@@ -29,204 +24,191 @@ var STATE = {
   BOUND: 2
 }
 
-class RCTSocket extends Component {
-  id: String;
-  _state: Integer;
-  _address: String;
-  _port: Integer;
+function UdpSocket(type) {
+  this._id = instances++
+  this._state = STATE.UNBOUND
+  this._subscriptiom = DeviceEventEmitter.addListener(
+    'udp-' + this._id + '-data', this._onReceive.bind(this)
+  );
 
-  constructor(props) {
-    super(props)
-    this.id = instances++
-    this.subscriptiom = DeviceEventEmitter.addListener(
-      'udp-' + this.id + '-data', this._onReceive.bind(this)
-    );
+  // ensure compatibility with node's EventEmitter
+  if (!this.on) this.on = this.addListener.bind(this)
 
-    // ensure compatibility with node's EventEmitter
-    if (!this.on) this.on = this.addListener.bind(this)
+  Sockets.createSocket(this._id, {
+    type: type || 'udp4'
+  }) // later
+}
 
-    this._state = STATE.UNBOUND
-    sockets.createSocket(this.id, {
-      type: props.type || 'udp4'
-    }) // later
+UdpSocket.prototype._debug = function() {
+  // for now
+  var args = [].slice.call(arguments)
+  args.unshift(this._id)
+  console.log.apply(console, args)
+}
+
+
+UdpSocket.prototype.bind = function(port, address, callback) {
+  var self = this
+
+  if (this._state !== STATE.UNBOUND) throw new Error('Socket is already bound')
+
+  if (typeof address === 'function') {
+    callback = address
+    address = undefined
   }
 
-  _debug() {
-    var args = [].slice.call(arguments)
-    args.unshift(this.id)
-    console.log.apply(console, args)
-  }
+  if (!address) address = '0.0.0.0'
 
-  bind(port, address, callback) {
-    var self = this
+  if (!port) port = 0
 
-    if (this._state !== STATE.UNBOUND) throw new Error('Socket is already bound')
+  if (callback) this.once('listening', callback.bind(this))
 
-    if (typeof address === 'function') {
-      callback = address
-      address = undefined
+  this._state = STATE.BINDING
+  this._debug('binding, address:', address, 'port:', port)
+  Sockets.bind(this._id, port, address, function(err, addr) {
+    if (err) {
+      // questionable: may want to self-destruct and
+      // force user to create a new socket
+      self._state = STATE.UNBOUND
+      self._debug('failed to bind', err)
+      return self.emit('error', err)
     }
 
-    if (!address) address = '0.0.0.0'
+    self._debug('bound to address:', addr.address, 'port:', addr.port)
+    self._address = addr.address
+    self._port = addr.port
+    self._state = STATE.BOUND
+    self.emit('listening')
+  })
+}
 
-    if (!port) port = 0
+UdpSocket.prototype.close = function() {
+  if (this._destroyed) return
 
-    if (callback) this.once('listening', callback.bind(this))
+  this._destroyed = true
+  this._debug('closing')
+  this._subscription.remove();
 
-    this._state = STATE.BINDING
-    this._debug('binding, address:', address, 'port:', port)
-    sockets.bind(this.id, port, address, function(err, addr) {
-      if (err) {
-        // questionable: may want to self-destruct and
-        // force user to create a new socket
-        self._state = STATE.UNBOUND
-        self._debug('failed to bind', err)
-        return self.emit('error', err)
-      }
+  Sockets.close(this._id, this._debug.bind(this, 'closed'))
+  this.emit('close')
+}
 
-      self._debug('bound to address:', addr.address, 'port:', addr.port)
-      self._address = addr.address
-      self._port = addr.port
-      self._state = STATE.BOUND
-      self.emit('listening')
-    })
+UdpSocket.prototype._onReceive = function(info) {
+  this._debug('received', info)
+
+  var buf = toByteArray(info.data)
+  var rinfo = {
+    address: info.address,
+    port: info.port,
+    family: 'IPv4', // not necessarily
+    size: buf.length
   }
 
-  componentWillUnmount() {
-    this.subscription.remove();
+  if (typeof Buffer !== 'undefined') buf = new Buffer(buf)
+
+  this.emit('message', buf, rinfo)
+}
+
+/**
+ * socket.send(buf, offset, length, port, address, [callback])
+ *
+ * For UDP sockets, the destination port and IP address must be
+ * specified. A string may be supplied for the address parameter, and it will
+ * be resolved with DNS. An optional callback may be specified to detect any
+ * DNS errors and when buf may be re-used. Note that DNS lookups will delay
+ * the time that a send takes place, at least until the next tick. The only
+ * way to know for sure that a send has taken place is to use the callback.
+ *
+ * If the socket has not been previously bound with a call to bind, it's
+ * assigned a random port number and bound to the "all interfaces" address
+ * (0.0.0.0 for udp4 sockets, ::0 for udp6 sockets).
+ *
+ * @param {Array|string} message to be sent
+ * @param {number} offset Offset in the buffer where the message starts.
+ * @param {number} length Number of bytes in the message.
+ * @param {number} port destination port
+ * @param {string} address destination IP
+ * @param {function} callback Callback when message is done being delivered.
+ *                            Optional.
+ */
+// UdpSocket.prototype.send = function (buf, host, port, cb) {
+UdpSocket.prototype.send = function(buffer, offset, length, port, address, callback) {
+  var self = this
+
+  if (offset !== 0) throw new Error('Non-zero offset not supported yet')
+
+  if (this._state === STATE.UNBOUND) {
+    throw new Error('bind before sending, seriously dude')
+  }
+  else if (this._state === STATE.BINDING) {
+    // we're ok, GCDAsync(Udp)Socket handles queueing internally
   }
 
-  _onReceive(info) {
-    this._debug('received', info)
+  callback = callback || noop
+  if (typeof buffer === 'string') {
+    buffer = toByteArray(buffer)
+  }
+  else if (typeof Buffer !== 'undefined' && Buffer.isBuffer(buffer)) {
+    buffer = buffer.toJSON().data
+  }
 
-    var buf = toByteArray(info.data)
-    var rinfo = {
-      address: info.address,
-      port: info.port,
-      family: 'IPv4', // not necessarily
-      size: buf.length
+  self._debug('sending', buffer)
+  Sockets.send(this._id, buffer, +port, address, function(err) {
+    if (err) {
+      self._debug('send failed', err)
+      return callback(err)
     }
 
-    if (typeof Buffer !== 'undefined') buf = new Buffer(buf)
+    self._debug('sent')
+    callback()
+  })
+}
 
-    this.emit('message', buf, rinfo)
+UdpSocket.prototype.address = function() {
+  if (this._state !== STATE.BOUND) {
+    throw new Error('socket is not bound yet')
   }
 
-
-  /**
-   * socket.send(buf, offset, length, port, address, [callback])
-   *
-   * For UDP sockets, the destination port and IP address must be
-   * specified. A string may be supplied for the address parameter, and it will
-   * be resolved with DNS. An optional callback may be specified to detect any
-   * DNS errors and when buf may be re-used. Note that DNS lookups will delay
-   * the time that a send takes place, at least until the next tick. The only
-   * way to know for sure that a send has taken place is to use the callback.
-   *
-   * If the socket has not been previously bound with a call to bind, it's
-   * assigned a random port number and bound to the "all interfaces" address
-   * (0.0.0.0 for udp4 sockets, ::0 for udp6 sockets).
-   *
-   * @param {Array|string} message to be sent
-   * @param {number} offset Offset in the buffer where the message starts.
-   * @param {number} length Number of bytes in the message.
-   * @param {number} port destination port
-   * @param {string} address destination IP
-   * @param {function} callback Callback when message is done being delivered.
-   *                            Optional.
-   */
-  // Socket.prototype.send = function (buf, host, port, cb) {
-  send(buffer, offset, length, port, address, callback) {
-    var self = this
-
-    if (offset !== 0) throw new Error('Non-zero offset not supported yet')
-
-    if (this._state === STATE.UNBOUND) {
-      throw new Error('bind before sending, seriously dude')
-    }
-    else if (this._state === STATE.BINDING) {
-      // we're ok, GCDAsync(Udp)Socket handles queueing internally
-    }
-
-    callback = callback || noop
-    if (typeof buffer === 'string') {
-      buffer = toByteArray(buffer)
-    }
-    else if (typeof Buffer !== 'undefined' && Buffer.isBuffer(buffer)) {
-      buffer = buffer.toJSON().data
-    }
-
-    self._debug('sending', buffer)
-    sockets.send(this.id, buffer, +port, address, function(err) {
-      if (err) {
-        self._debug('send failed', err)
-        return callback(err)
-      }
-
-      self._debug('sent')
-      callback()
-    })
-  }
-
-  address() {
-    if (this._state !== STATE.BOUND) {
-      throw new Error('socket is not bound yet')
-    }
-
-    return {
-      address: this._address,
-      port: this._port,
-      family: 'IPv4'
-    }
-  }
-
-  close() {
-    var self = this
-    if (this._destroyed) return
-
-    this._destroyed = true
-    this._debug('closing')
-    sockets.close(this.id, function() {
-      self._debug('closed')
-    })
-
-    this.emit('close')
-  }
-
-  setBroadcast(flag) {
-    // nothing yet
-  }
-
-  setTTL(ttl) {
-    // nothing yet
-  }
-
-  setMulticastTTL(ttl, callback) {
-    // nothing yet
-  }
-
-  setMulticastLoopback(flag, callback) {
-    // nothing yet
-  }
-
-  addMembership(multicastAddress, multicastInterface, callback) {
-    // nothing yet
-  }
-
-  dropMembership(multicastAddress, multicastInterface, callback) {
-    // nothing yet
-  }
-
-  ref() {
-    // anything?
-  }
-
-  unref() {
-    // anything?
+  return {
+    address: this._address,
+    port: this._port,
+    family: 'IPv4'
   }
 }
 
-mixInEventEmitter(RCTSocket, {
+UdpSocket.prototype.setBroadcast = function(flag) {
+  // nothing yet
+}
+
+UdpSocket.prototype.setTTL = function(ttl) {
+  // nothing yet
+}
+
+UdpSocket.prototype.setMulticastTTL = function(ttl, callback) {
+  // nothing yet
+}
+
+UdpSocket.prototype.setMulticastLoopback = function(flag, callback) {
+  // nothing yet
+}
+
+UdpSocket.prototype.addMembership = function(multicastAddress, multicastInterface, callback) {
+  // nothing yet
+}
+
+UdpSocket.prototype.dropMembership = function(multicastAddress, multicastInterface, callback) {
+  // nothing yet
+}
+
+UdpSocket.prototype.ref = function() {
+  // anything?
+}
+
+UdpSocket.prototype.unref = function() {
+  // anything?
+}
+
+mixInEventEmitter(UdpSocket, {
   'listening': true,
   'message': true,
   'close': true,
@@ -258,4 +240,4 @@ function toByteArray(obj) {
   return new Uint8Array(uint);
 }
 
-module.exports = RCTSocket
+module.exports = UdpSocket
