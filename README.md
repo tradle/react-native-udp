@@ -8,7 +8,7 @@ This module is used by [Tradle](https://github.com/tradle)
 
 * Create a new react-native project. [Check react-native getting started](http://facebook.github.io/react-native/docs/getting-started.html#content)
 
-* in PROJECT_DIR/node_modules/react-native, execute:
+* In your project dir:
 ```
 npm install --save react-native-udp
 ```
