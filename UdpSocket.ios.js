@@ -27,7 +27,7 @@ var STATE = {
 function UdpSocket(type) {
   this._id = instances++
   this._state = STATE.UNBOUND
-  this._subscriptiom = DeviceEventEmitter.addListener(
+  this._subscription = DeviceEventEmitter.addListener(
     'udp-' + this._id + '-data', this._onReceive.bind(this)
   );
 
