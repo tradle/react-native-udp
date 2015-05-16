@@ -69,7 +69,6 @@ RCT_EXPORT_METHOD(send:(NSString*)cId
     // TODO: use https://github.com/nicklockwood/Base64 for compatibility with earlier iOS versions
     NSData *data = [[NSData alloc] initWithBase64EncodedString:base64String options:0];
     [client send:data remotePort:port remoteAddress:address callback:callback];
-    if (callback) callback(@[]);
 }
 
 RCT_EXPORT_METHOD(close:(NSString*)cId
