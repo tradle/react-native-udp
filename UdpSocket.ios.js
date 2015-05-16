@@ -43,10 +43,9 @@ function UdpSocket(type) {
 UdpSocket.prototype._debug = function() {
   // for now
   var args = [].slice.call(arguments)
-  args.unshift(this._id)
-  console.log.apply(console, args)
+  args.unshift('socket-' + this._id)
+  console.log.apply(null, args)
 }
-
 
 UdpSocket.prototype.bind = function(port, address, callback) {
   var self = this
@@ -97,6 +96,7 @@ UdpSocket.prototype.close = function() {
 UdpSocket.prototype._onReceive = function(info) {
   this._debug('received', info)
 
+  // from base64 string
   var buf = base64.toByteArray(info.data)
   var rinfo = {
     address: info.address,
@@ -105,7 +105,7 @@ UdpSocket.prototype._onReceive = function(info) {
     size: buf.length
   }
 
-  if (typeof Buffer !== 'undefined') buf = new Buffer(buf)
+  if (typeof Buffer !== 'undefined') buf = new Buffer(buf, 'binary')
 
   this.emit('message', buf, rinfo)
 }
