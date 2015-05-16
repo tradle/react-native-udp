@@ -139,7 +139,12 @@ UdpSocket.prototype.send = function(buffer, offset, length, port, address, callb
   if (offset !== 0) throw new Error('Non-zero offset not supported yet')
 
   if (this._state === STATE.UNBOUND) {
-    throw new Error('bind before sending, seriously dude')
+    var args = [].slice.call(arguments)
+    return this.bind(0, function(err) {
+      if (err) return callback(err)
+
+      self.send.apply(self, args)
+    })
   }
   else if (this._state === STATE.BINDING) {
     // we're ok, GCDAsync(Udp)Socket handles queueing internally
