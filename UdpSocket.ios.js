@@ -16,6 +16,7 @@ var React = require('react-native')
 var mixInEventEmitter = require('mixInEventEmitter')
 var DeviceEventEmitter = require('RCTDeviceEventEmitter')
 var Sockets = require('NativeModules').UdpSockets
+var base64 = require('base64-js')
 var noop = function () {}
 var instances = 0
 var STATE = {
@@ -96,7 +97,7 @@ UdpSocket.prototype.close = function() {
 UdpSocket.prototype._onReceive = function(info) {
   this._debug('received', info)
 
-  var buf = toByteArray(info.data)
+  var buf = base64.toByteArray(info.data)
   var rinfo = {
     address: info.address,
     port: info.port,
@@ -145,15 +146,23 @@ UdpSocket.prototype.send = function(buffer, offset, length, port, address, callb
   }
 
   callback = callback || noop
+  var str
   if (typeof buffer === 'string') {
-    buffer = toByteArray(buffer)
+    console.warn('socket.send(): interpreting as base64')
+    str = buffer
   }
   else if (typeof Buffer !== 'undefined' && Buffer.isBuffer(buffer)) {
-    buffer = buffer.toJSON().data
+    str = buffer.toString('base64')
+  }
+  else if (buffer instanceof Uint8Array || Array.isArray(buffer)) {
+    str = base64.fromByteArray(buffer)
+  }
+  else {
+    throw new Error('invalid message format')
   }
 
-  self._debug('sending', buffer)
-  Sockets.send(this._id, buffer, +port, address, function(err) {
+  self._debug('sending', buffer, str)
+  Sockets.send(this._id, str, +port, address, function(err) {
     if (err) {
       self._debug('send failed', err)
       return callback(err)
@@ -214,30 +223,5 @@ mixInEventEmitter(UdpSocket, {
   'close': true,
   'error': true
 })
-
-function toByteArray(obj) {
-  if (typeof obj === 'object') {
-    var i = 0
-    var arr = []
-    while (true) {
-      if (!(i in obj)) break
-
-      arr.push(+obj[i])
-      i++
-    }
-
-    return new Uint8Array(arr)
-  }
-  else if (typeof obj !== 'string') {
-    throw new Error('unsupported format')
-  }
-
-  var uint = new Uint8Array(obj.length);
-  for (var i = 0, l = obj.length; i < l; i++){
-    uint[i] = obj.charCodeAt(i);
-  }
-
-  return new Uint8Array(uint);
-}
 
 module.exports = UdpSocket

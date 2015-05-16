@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tradle/react-native-udp.git"
+    "url": "https://github.com/tradle/react-native-udp"
   },
   "keywords": [
     "react-component",
@@ -22,13 +22,17 @@
     "sockets",
     "ios"
   ],
-  "author": "Mark Vayngrib <mark.vayngrib@lablz.com>",
+  "author": {
+    "name": "Mark Vayngrib",
+    "email": "mark.vayngrib@lablz.com"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/tradle/react-native-udp/issues"
   },
   "homepage": "https://github.com/tradle/react-native-udp",
   "dependencies": {
+    "base64-js": "0.0.8",
     "react-native": "^0.4.2"
   }
 }

@@ -58,13 +58,16 @@ RCT_EXPORT_METHOD(bind:(NSString*)cId
 }
 
 RCT_EXPORT_METHOD(send:(NSString*)cId
-                  data:(NSData*)data
+                  base64String:(NSString*)base64String
                   port:(int)port
                   address:(NSString*)address
                   callback:(RCTResponseSenderBlock)callback) {
     UdpSocketClient* client = [self findClient:cId callback:callback];
     if (!client) return;
-    
+
+    // iOS7+
+    // TODO: use https://github.com/nicklockwood/Base64 for compatibility with earlier iOS versions
+    NSData *data = [[NSData alloc] initWithBase64EncodedString:base64String options:0];
     [client send:data remotePort:port remoteAddress:address callback:callback];
     if (callback) callback(@[]);
 }
@@ -83,15 +86,10 @@ RCT_EXPORT_METHOD(close:(NSString*)cId
 - (void) onData:(UdpSocketClient*) client data:(NSData *)data host:(NSString *)host port:(uint16_t)port
 {
     NSString *clientID = [[_clients allKeysForObject:client] objectAtIndex:0];
-    NSPropertyListFormat format;
-    NSArray* arr = [NSPropertyListSerialization propertyListFromData:data
-                                                    mutabilityOption:NSPropertyListMutableContainers
-                                                              format:&format
-                                                    errorDescription:NULL];
-    
+    NSString *base64String = [data base64EncodedStringWithOptions:0];
     [self.bridge.eventDispatcher sendDeviceEventWithName:[NSString stringWithFormat:@"udp-%@-data", clientID]
                                                     body:@{
-                                                           @"data": arr,
+                                                           @"data": base64String,
                                                            @"address": host,
                                                            @"port": [NSNumber numberWithInt:port]
                                                            }

@@ -16,7 +16,8 @@ function randomPort() {
   return Math.random() * 65536 | 0
 }
 
-var dgram = require('RCTUDP')
+var base64 = require('base64-js')
+var dgram = require('dgram')
 var a = dgram.createSocket('udp4')
 var aPort = randomPort()
 a.bind(bPort, function(err) {
@@ -92,24 +93,8 @@ var styles = StyleSheet.create({
   },
 });
 
-
+// only works for 8-bit chars
 function toByteArray(obj) {
-  if (typeof obj === 'object') {
-    var i = 0
-    var arr = []
-    while (true) {
-      if (!(i in obj)) break
-
-      arr.push(+obj[i])
-      i++
-    }
-
-    return new Uint8Array(arr)
-  }
-  else if (typeof obj !== 'string') {
-    throw new Error('unsupported format')
-  }
-
   var uint = new Uint8Array(obj.length);
   for (var i = 0, l = obj.length; i < l; i++){
     uint[i] = obj.charCodeAt(i);
