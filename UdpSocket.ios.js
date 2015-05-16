@@ -44,7 +44,7 @@ UdpSocket.prototype._debug = function() {
   // for now
   var args = [].slice.call(arguments)
   args.unshift('socket-' + this._id)
-  console.log.apply(null, args)
+  console.log.apply(console, args)
 }
 
 UdpSocket.prototype.bind = function(port, address, callback) {
