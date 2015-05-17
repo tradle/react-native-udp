@@ -12,8 +12,9 @@
 
 'use strict';
 
+var inherits = require('inherits')
+var EventEmitter = require('events').EventEmitter
 var React = require('react-native')
-var mixInEventEmitter = require('mixInEventEmitter')
 var DeviceEventEmitter = require('RCTDeviceEventEmitter')
 var Sockets = require('NativeModules').UdpSockets
 var base64 = require('base64-js')
@@ -26,6 +27,8 @@ var STATE = {
 }
 
 function UdpSocket(type) {
+  EventEmitter.call(this)
+
   this._id = instances++
   this._state = STATE.UNBOUND
   this._subscription = DeviceEventEmitter.addListener(
@@ -39,6 +42,8 @@ function UdpSocket(type) {
     type: type || 'udp4'
   }) // later
 }
+
+inherits(UdpSocket, EventEmitter)
 
 UdpSocket.prototype._debug = function() {
   // for now
@@ -221,12 +226,5 @@ UdpSocket.prototype.ref = function() {
 UdpSocket.prototype.unref = function() {
   // anything?
 }
-
-mixInEventEmitter(UdpSocket, {
-  'listening': true,
-  'message': true,
-  'close': true,
-  'error': true
-})
 
 module.exports = UdpSocket
