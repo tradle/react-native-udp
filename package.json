@@ -7,7 +7,7 @@
     "start": "exit 1"
   },
   "browser": {
-    "dgram": "./dgram.js"
+    "dgram": "./UdpSockets.ios.js"
   },
   "repository": {
     "type": "git",
