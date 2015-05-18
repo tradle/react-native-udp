@@ -47,9 +47,11 @@ inherits(UdpSocket, EventEmitter)
 
 UdpSocket.prototype._debug = function() {
   // for now
-  var args = [].slice.call(arguments)
-  args.unshift('socket-' + this._id)
-  console.log.apply(console, args)
+  if (typeof DEBUG !== 'undefined' && DEBUG) {
+    var args = [].slice.call(arguments)
+    args.unshift('socket-' + this._id)
+    console.log.apply(console, args)
+  }
 }
 
 UdpSocket.prototype.bind = function(port, address, callback) {
