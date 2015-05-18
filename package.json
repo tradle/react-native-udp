@@ -35,7 +35,9 @@
     "base64-js": "0.0.8",
     "events": "^1.0.2",
     "inherits": "^2.0.1",
-    "react-native": "^0.4.2",
     "util": "^0.10.3"
+  },
+  "peerDependencies": {
+    "react-native": "^0.4.1"
   }
 }
