@@ -26,10 +26,12 @@ var STATE = {
   BOUND: 2
 }
 
-function UdpSocket(type) {
+function UdpSocket(options, onmessage) {
   EventEmitter.call(this)
 
-  this.type = type
+  if (typeof options === 'string') options = { type: options }
+
+  this.type = options.type
   this._id = instances++
   this._state = STATE.UNBOUND
   this._subscription = DeviceEventEmitter.addListener(
@@ -39,8 +41,10 @@ function UdpSocket(type) {
   // ensure compatibility with node's EventEmitter
   if (!this.on) this.on = this.addListener.bind(this)
 
+  if (onmessage) this.on('message', onmessage)
+
   Sockets.createSocket(this._id, {
-    type: type || 'udp4'
+    type: this.type
   }) // later
 }
 
