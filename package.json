@@ -38,6 +38,6 @@
     "util": "^0.10.3"
   },
   "peerDependencies": {
-    "react-native": "^0.4.1"
+    "react-native": "0.x"
   }
 }
