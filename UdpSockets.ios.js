@@ -6,10 +6,10 @@
 
 var UdpSocket = require('./UdpSocket.ios')
 
-module.exports = {
-  createSocket: function(type) {
-    return new UdpSocket({
-      type: type
-    })
-  }
+exports.createSocket = function(type) {
+  return new UdpSocket({
+    type: type
+  })
 }
+
+exports.Socket = UdpSocket;
