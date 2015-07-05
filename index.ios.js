@@ -13,14 +13,14 @@ var {
 // require('./test/simple/test-dgram-bind-shared-ports')
 
 function randomPort() {
-  return Math.random() * 65536 | 0
+  return Math.random() * 60536 | 0 + 5000 // 60536-65536
 }
 
 var base64 = require('base64-js')
 var dgram = require('dgram')
 var a = dgram.createSocket('udp4')
 var aPort = randomPort()
-a.bind(bPort, function(err) {
+a.bind(aPort, function(err) {
   if (err) throw err
 
   console.log('address', a.address())
