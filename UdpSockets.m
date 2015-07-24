@@ -58,7 +58,7 @@ RCT_EXPORT_METHOD(bind:(NSString*)cId
 }
 
 RCT_EXPORT_METHOD(send:(NSString*)cId
-                  base64String:(NSString*)base64String
+                  string:(NSString*)base64String
                   port:(int)port
                   address:(NSString*)address
                   callback:(RCTResponseSenderBlock)callback) {
