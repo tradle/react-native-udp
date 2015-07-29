@@ -126,6 +126,12 @@ remoteAddress:(NSString *)address
   [_udpSocket close];
 }
 
+- (BOOL) setBroadcast:(BOOL)flag
+                error:(NSError **)error
+{
+  return [_udpSocket enableBroadcast:flag error:error];
+}
+
 - (void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data
                   fromAddress:(NSData *)address
                   withFilterContext:(id)filterContext
