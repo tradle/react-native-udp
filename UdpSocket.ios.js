@@ -14,9 +14,11 @@
 
 var inherits = require('inherits')
 var EventEmitter = require('events').EventEmitter
-var React = require('react-native')
-var DeviceEventEmitter = require('RCTDeviceEventEmitter')
-var Sockets = require('NativeModules').UdpSockets
+var {
+  DeviceEventEmitter,
+  NativeModules
+} = require('react-native');
+var Sockets = NativeModules.UdpSockets
 var base64 = require('base64-js')
 var noop = function () {}
 var instances = 0
