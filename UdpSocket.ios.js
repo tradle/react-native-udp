@@ -205,7 +205,18 @@ UdpSocket.prototype.address = function() {
 }
 
 UdpSocket.prototype.setBroadcast = function(flag) {
-  // nothing yet
+  var self = this
+
+  if (this._state !== STATE.BOUND) {
+    throw new Error('you must bind before setBroadcast()')
+  }
+
+  Sockets.setBroadcast(this._id, flag, function(err) {
+    if (err) {
+      self._debug('failed to set broadcast', err)
+      return self.emit('error', err)
+    }
+  });
 }
 
 UdpSocket.prototype.setTTL = function(ttl) {

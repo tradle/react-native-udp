@@ -82,6 +82,21 @@ RCT_EXPORT_METHOD(close:(NSString*)cId
     if (callback) callback(@[]);
 }
 
+RCT_EXPORT_METHOD(setBroadcast:(NSString*)cId
+                  flag:(BOOL)flag
+                  callback:(RCTResponseSenderBlock)callback) {
+    UdpSocketClient* client = [self findClient:cId callback:callback];
+    if (!client) return;
+
+    NSError *error = nil;
+    if (![client setBroadcast:flag error:&error])
+    {
+        callback(@[error]);
+        return;
+    }
+    callback(@[[NSNull null]]);
+}
+
 - (void) onData:(UdpSocketClient*) client data:(NSData *)data host:(NSString *)host port:(uint16_t)port
 {
     NSString *clientID = [[_clients allKeysForObject:client] objectAtIndex:0];

@@ -82,4 +82,9 @@ typedef enum RCTUDPError RCTUDPError;
  */
 - (void)close;
 
+/**
+ * Enable broadcast
+ */
+- (BOOL)setBroadcast:(BOOL) flag error:(NSError **) error;
+
 @end
