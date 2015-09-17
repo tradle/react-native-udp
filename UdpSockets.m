@@ -20,47 +20,47 @@ RCT_EXPORT_MODULE()
 
 @synthesize bridge = _bridge;
 
-RCT_EXPORT_METHOD(createSocket:(NSString*)cId withOptions:(NSDictionary*)options)
+RCT_EXPORT_METHOD(createSocket:(nonnull NSNumber*)cId withOptions:(NSDictionary*)options)
 {
     if (!_clients) _clients = [[NSMutableDictionary alloc] init];
-    
+
     if (!cId) {
         RCTLogError(@"%@.createSocket called with nil id parameter.", [self class]);
         return;
     }
-    
+
     UdpSocketClient *client = [_clients objectForKey:cId];
     if (client) {
         RCTLogError(@"%@.createSocket called twice with the same id.", [self class]);
         return;
     }
-    
+
     client = [UdpSocketClient socketClientWithConfig:self];
     [_clients setObject:client forKey:cId];
 }
 
-RCT_EXPORT_METHOD(bind:(NSString*)cId
+RCT_EXPORT_METHOD(bind:(nonnull NSNumber*)cId
                   port:(int)port
                   address:(NSString *)address
                   callback:(RCTResponseSenderBlock)callback)
 {
     UdpSocketClient* client = [self findClient:cId callback:callback];
     if (!client) return;
-    
+
     NSError *error = nil;
     if (![client bind:port address:address error:&error])
     {
         callback(@[error]);
         return;
     }
-    
+
     callback(@[[NSNull null], [client address]]);
 }
 
-RCT_EXPORT_METHOD(send:(NSString*)cId
-                  string:(NSString*)base64String
+RCT_EXPORT_METHOD(send:(nonnull NSNumber*)cId
+                  string:(nonnull NSNumber*)base64String
                   port:(int)port
-                  address:(NSString*)address
+                  address:(nonnull NSNumber*)address
                   callback:(RCTResponseSenderBlock)callback) {
     UdpSocketClient* client = [self findClient:cId callback:callback];
     if (!client) return;
@@ -71,18 +71,18 @@ RCT_EXPORT_METHOD(send:(NSString*)cId
     [client send:data remotePort:port remoteAddress:address callback:callback];
 }
 
-RCT_EXPORT_METHOD(close:(NSString*)cId
+RCT_EXPORT_METHOD(close:(nonnull NSNumber*)cId
                   callback:(RCTResponseSenderBlock)callback) {
     UdpSocketClient* client = [self findClient:cId callback:callback];
     if (!client) return;
-    
+
     [client close];
     [_clients removeObjectForKey:cId];
-    
+
     if (callback) callback(@[]);
 }
 
-RCT_EXPORT_METHOD(setBroadcast:(NSString*)cId
+RCT_EXPORT_METHOD(setBroadcast:(nonnull NSNumber*)cId
                   flag:(BOOL)flag
                   callback:(RCTResponseSenderBlock)callback) {
     UdpSocketClient* client = [self findClient:cId callback:callback];
@@ -110,7 +110,7 @@ RCT_EXPORT_METHOD(setBroadcast:(NSString*)cId
      ];
 }
 
--(UdpSocketClient*)findClient:(NSString*)cId callback:(RCTResponseSenderBlock)callback
+-(UdpSocketClient*)findClient:(nonnull NSNumber*)cId callback:(RCTResponseSenderBlock)callback
 {
     UdpSocketClient *client = [_clients objectForKey:cId];
     if (!client) {
@@ -120,10 +120,10 @@ RCT_EXPORT_METHOD(setBroadcast:(NSString*)cId
         else {
             callback(@[[NSString stringWithFormat:@"no client found with id %@", cId]]);
         }
-        
+
         return nil;
     }
-    
+
     return client;
 }
 
