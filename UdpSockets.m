@@ -58,9 +58,9 @@ RCT_EXPORT_METHOD(bind:(nonnull NSNumber*)cId
 }
 
 RCT_EXPORT_METHOD(send:(nonnull NSNumber*)cId
-                  string:(nonnull NSNumber*)base64String
+                  string:(NSString*)base64String
                   port:(int)port
-                  address:(nonnull NSNumber*)address
+                  address:(NSString*)address
                   callback:(RCTResponseSenderBlock)callback) {
     UdpSocketClient* client = [self findClient:cId callback:callback];
     if (!client) return;
