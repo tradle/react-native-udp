@@ -13,7 +13,61 @@ This module is used by [Tradle](https://github.com/tradle)
 npm install --save react-native-udp
 ```
 
-* Drag UdpSockets.xcodeproj from node_modules/react-native-udp into your XCode project. Click on the project in XCode, go to Build Phases, then Link Binary With Libraries and add libUdpSockets.a
+### `iOS`
+
+* Drag UdpSockets.xcodeproj from node_modules/react-native-udp/ios into your XCode project.
+
+* Click on the project in XCode, go to Build Phases, then Link Binary With Libraries and add `libUdpSockets.a`
+
+### `Android`
+
+* `android/settings.gradle`
+
+```gradle
+...
+include ':react-native-udp'
+project(':react-native-udp').projectDir = new File(settingsDir, '../node_modules/react-native-udp/android')
+```
+* `android/app/build.gradle`
+
+```gradle
+dependencies {
+	...
+	compile project(':react-native-udp')
+}
+```
+
+* register module (in MainActivity.java)
+
+```java
+...
+
+import com.tradle.react.*; // <--- import
+
+public class MainActivity extends Activity implements DefaultHardwareBackBtnHandler {
+	...
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mReactRootView = new ReactRootView(this);
+
+        mReactInstanceManager = ReactInstanceManager.builder()
+                .setApplication(getApplication())
+                .setBundleAssetName("index.android.bundle")
+                .setJSMainModuleName("index.android")
+                .addPackage(new MainReactPackage())
+                .addPackage(new UdpSocketsModule())           // <- add here
+                .setUseDeveloperSupport(BuildConfig.DEBUG)
+                .setInitialLifecycleState(LifecycleState.RESUMED)
+                .build();
+
+        mReactRootView.startReactApplication(mReactInstanceManager, "YourProject", null);
+
+        setContentView(mReactRootView);
+    }
+}
+```
 
 Buckle up, Dorothy
 
@@ -33,19 +87,19 @@ _only if you want to write require('dgram') in your javascript_
 
 ### JS
 
-_see/run index.ios.js for a complete example, but basically it's just like dgram_
+_see/run index.js for a complete example, but basically it's just like dgram_
 
 ```js
 var dgram = require('dgram')
 // OR, if not shimming via package.json "browser" field:
-// var dgram = require('UdpSockets') 
+// var dgram = require('UdpSockets')
 var socket = dgram.createSocket('udp4')
 socket.bind(12345)
 socket.once('listening', function() {
   var buf = toByteArray('excellent!')
   socket.send(buf, 0, buf.length, remotePort, remoteHost, function(err) {
     if (err) throw err
-    
+
     console.log('message was sent')
   })
 })
@@ -72,5 +126,7 @@ add select tests from node's tests for dgram
 [Mark Vayngrib](https://github.com/mvayngrib)  
 [Ellen Katsnelson](https://github.com/pgmemk)  
 [Tradle, Inc.](https://github.com/tradle/about/wiki)
+
+[Andy Prock](https://github.com/aprock)  
 
 PR's welcome!
