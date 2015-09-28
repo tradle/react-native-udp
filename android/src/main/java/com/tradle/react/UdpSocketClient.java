@@ -11,32 +11,34 @@ import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.util.Base64;
 
+import com.facebook.common.logging.FLog;
 import com.facebook.react.bridge.Callback;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.tradle.react.UdpSenderTask.OnDataSentListener;
+
 /**
  * Client class that wraps a sender and a receiver for UDP data.
  */
-public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedListener, UdpSenderTask.OnDataSentListener {
+public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedListener, OnDataSentListener {
     private final OnDataReceivedListener mReceiverListener;
     private final OnRuntimeExceptionListener mExceptionListener;
     private final boolean mReuseAddress;
-    private final Map<UdpSenderTask, Callback> mPendingSends;
 
-    private DatagramChannel mChannel;
-    private DatagramSocket mSocket;
     private UdpReceiverTask mReceiverTask;
+
+    private final Map<UdpSenderTask, Callback> mPendingSends;
+    private DatagramChannel mSenderChannel;
 
     private UdpSocketClient(Builder builder) {
         this.mReceiverListener = builder.receiverListener;
@@ -58,20 +60,20 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
      *             binding.
      */
     public void bind(Integer port, @Nullable String address) throws IOException {
-        mChannel = DatagramChannel.open();
-        mChannel.configureBlocking(true);
-        mSocket = mChannel.socket();
-        mReceiverTask = new UdpReceiverTask(mSocket, this);
+        DatagramChannel receiverChannel = DatagramChannel.open();
+        receiverChannel.configureBlocking(false);
+        mReceiverTask = new UdpReceiverTask(receiverChannel, this);
 
-        SocketAddress socketAddress = null;
+        SocketAddress socketAddress;
         if (address != null) {
             socketAddress = new InetSocketAddress(address, port);
         } else {
             socketAddress = new InetSocketAddress(port);
         }
 
-        mSocket.setReuseAddress(mReuseAddress);
-        mSocket.bind(socketAddress);
+        DatagramSocket socket = receiverChannel.socket();
+        socket.setReuseAddress(mReuseAddress);
+        socket.bind(socketAddress);
 
         // begin listening for data in the background
         mReceiverTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -86,16 +88,25 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
      * @param callback callback for results
      * @throws UnknownHostException
      */
-    public void send(String base64String, Integer port, String address, @Nullable Callback callback) throws UnknownHostException {
+    public void send(String base64String, Integer port, String address, @Nullable Callback callback) throws UnknownHostException, IOException {
+        if (null == mSenderChannel || !mSenderChannel.isOpen()) {
+            mSenderChannel = DatagramChannel.open();
+            mSenderChannel.configureBlocking(true);
+        }
+
         byte[] data = Base64.decode(base64String, Base64.NO_WRAP);
-        DatagramPacket packet = new DatagramPacket(data, data.length,
-                InetAddress.getByName(address), port);
-        UdpSenderTask task = new UdpSenderTask(mSocket, this);
+
+        UdpSenderTask task = new UdpSenderTask(mSenderChannel, this);
+        UdpSenderTask.SenderPacket packet = new UdpSenderTask.SenderPacket();
+        packet.data = ByteBuffer.wrap(data);
+        packet.socketAddress = new InetSocketAddress(address, port);
+
         if (callback != null) {
             synchronized (mPendingSends) {
                 mPendingSends.put(task, callback);
             }
         }
+
         task.execute(packet);
     }
 
@@ -103,8 +114,11 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
      * Sets the socket to enable broadcasts.
      */
     public void setBroadcast(boolean flag) throws SocketException {
-        if (mSocket != null) {
-            mSocket.setBroadcast(flag);
+        if (mReceiverTask != null) {
+            DatagramChannel channel = mReceiverTask.getChannel();
+            if (channel != null) {
+                channel.socket().setBroadcast(flag);
+            }
         }
     }
 
@@ -113,9 +127,12 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
      */
     public void close() throws IOException {
         if (mReceiverTask != null && !mReceiverTask.isCancelled()) {
-            mReceiverTask.cancel(false);
-        } else if (mChannel.isOpen()) {
-            mChannel.close();
+            // stop the receiving task, and close the channel
+            mReceiverTask.cancel(true);
+        }
+
+        if (mSenderChannel != null && mSenderChannel.isOpen()) {
+            mSenderChannel.close();
         }
     }
 

@@ -11,29 +11,30 @@ import android.os.AsyncTask;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
+import java.net.SocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
 
 /**
  * Specialized AsyncTask that transmits data in the background, and notifies listeners of the result.
  */
-public class UdpSenderTask extends AsyncTask<DatagramPacket, Void, Void> {
+public class UdpSenderTask extends AsyncTask<UdpSenderTask.SenderPacket, Void, Void> {
     private static final String TAG = "UdpSenderTask";
 
-    private DatagramSocket mSocket;
+    private DatagramChannel mChannel;
     private WeakReference<OnDataSentListener> mListener;
 
-    public UdpSenderTask(DatagramSocket socket, OnDataSentListener listener) {
-        this.mSocket = socket;
+    public UdpSenderTask(DatagramChannel channel, OnDataSentListener listener) {
+        this.mChannel = channel;
         this.mListener = new WeakReference<>(listener);
     }
 
     @Override
-    protected Void doInBackground(DatagramPacket... params) {
+    protected Void doInBackground(SenderPacket... params) {
         OnDataSentListener listener = mListener.get();
 
         try {
-            mSocket.send(params[0]);
+            mChannel.send(params[0].data, params[0].socketAddress);
             if (listener != null) {
                 listener.onDataSent(this);
             }
@@ -48,6 +49,14 @@ public class UdpSenderTask extends AsyncTask<DatagramPacket, Void, Void> {
         }
 
         return null;
+    }
+
+    /**
+     * Simple class to marshall outgoing data across to this AsyncTask
+     */
+    public static class SenderPacket {
+        SocketAddress socketAddress;
+        ByteBuffer data;
     }
 
     /**

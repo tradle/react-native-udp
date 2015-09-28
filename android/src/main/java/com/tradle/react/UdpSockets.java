@@ -70,10 +70,10 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                     mClients.clear();
                 }
             }.execute().get();
-        } catch (InterruptedException e) {
-            FLog.e(TAG, "onCatalystInstanceDestroy", e);
-        } catch (ExecutionException e) {
-            FLog.e(TAG, "onCatalystInstanceDestroy", e);
+        } catch (InterruptedException ioe) {
+            FLog.e(TAG, "onCatalystInstanceDestroy", ioe);
+        } catch (ExecutionException ee) {
+            FLog.e(TAG, "onCatalystInstanceDestroy", ee);
         }
     }
 
@@ -140,15 +140,15 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                     result.putInt("port", port);
 
                     callback.invoke(null, result);
-                } catch (SocketException exception) {
+                } catch (SocketException se) {
                     // Socket is already bound or a problem occurred during binding
-                    callback.invoke(UdpErrorUtil.getError(null, exception.getMessage()));
-                } catch (IllegalArgumentException exception) {
+                    callback.invoke(UdpErrorUtil.getError(null, se.getMessage()));
+                } catch (IllegalArgumentException iae) {
                     // SocketAddress is not supported
-                    callback.invoke(UdpErrorUtil.getError(null, exception.getMessage()));
-                } catch (IOException exception) {
+                    callback.invoke(UdpErrorUtil.getError(null, iae.getMessage()));
+                } catch (IOException ioe) {
                     // an exception occurred
-                    callback.invoke(UdpErrorUtil.getError(null, exception.getMessage()));
+                    callback.invoke(UdpErrorUtil.getError(null, ioe.getMessage()));
                 }
             }
         }.execute();
@@ -170,8 +170,11 @@ public final class UdpSockets extends ReactContextBaseJavaModule
 
                 try {
                     client.send(base64String, port, address, callback);
-                } catch (UnknownHostException e) {
-                    callback.invoke(UdpErrorUtil.getError(null, e.getMessage()));
+                } catch (UnknownHostException uhe) {
+                    callback.invoke(UdpErrorUtil.getError(null, uhe.getMessage()));
+                } catch (IOException ioe) {
+                    // an exception occurred
+                    callback.invoke(UdpErrorUtil.getError(null, ioe.getMessage()));
                 }
             }
         }.execute();
@@ -193,8 +196,8 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                 try {
                     client.close();
                     callback.invoke();
-                } catch (IOException e) {
-                    callback.invoke(UdpErrorUtil.getError(null, e.getMessage()));
+                } catch (IOException ioe) {
+                    callback.invoke(UdpErrorUtil.getError(null, ioe.getMessage()));
                 }
 
                 mClients.remove(cId);
