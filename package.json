@@ -2,12 +2,12 @@
   "name": "react-native-udp",
   "version": "0.1.0",
   "description": "node's dgram API for react-native",
-  "main": "./UdpSockets.ios.js",
+  "main": "UdpSockets.js",
   "scripts": {
     "start": "exit 1"
   },
   "browser": {
-    "dgram": "./UdpSockets.ios.js"
+    "dgram": "./UdpSockets.js"
   },
   "repository": {
     "type": "git",
@@ -20,7 +20,8 @@
     "dgram",
     "udp",
     "sockets",
-    "ios"
+    "ios",
+    "android"
   ],
   "author": {
     "name": "Mark Vayngrib",
