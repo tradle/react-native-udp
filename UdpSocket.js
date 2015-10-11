@@ -34,7 +34,7 @@ function UdpSocket(options, onmessage) {
   if (typeof options === 'string') options = { type: options }
 
   this.type = options.type
-  this._id = '' + instances++
+  this._id = instances++
   this._state = STATE.UNBOUND
   this._subscription = DeviceEventEmitter.addListener(
     'udp-' + this._id + '-data', this._onReceive.bind(this)
