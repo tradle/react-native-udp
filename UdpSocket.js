@@ -20,6 +20,7 @@ var {
 } = require('react-native');
 var Sockets = NativeModules.UdpSockets
 var base64 = require('base64-js')
+var ipRegex = require('ip-regex')
 var noop = function () {}
 var instances = 0
 var STATE = {
@@ -28,12 +29,20 @@ var STATE = {
   BOUND: 2
 }
 
+module.exports = UdpSocket
+
 function UdpSocket(options, onmessage) {
   EventEmitter.call(this)
 
   if (typeof options === 'string') options = { type: options }
 
+  if (options.type !== 'udp4' && options.type !== 'udp6') {
+    throw new Error('invalid udp socket type')
+  }
+
   this.type = options.type
+  this._ipv = Number(this.type.slice(3))
+  this._ipRegex = ipRegex['v' + this._ipv]({ exact: true })
   this._id = instances++
   this._state = STATE.UNBOUND
   this._subscription = DeviceEventEmitter.addListener(
@@ -80,11 +89,13 @@ UdpSocket.prototype.bind = function(port, address, callback) {
   this._state = STATE.BINDING
   this._debug('binding, address:', address, 'port:', port)
   Sockets.bind(this._id, port, address, function(err, addr) {
+    err = normalizeError(err)
     if (err) {
       // questionable: may want to self-destruct and
       // force user to create a new socket
       self._state = STATE.UNBOUND
       self._debug('failed to bind', err)
+      if (callback) callback(err)
       return self.emit('error', err)
     }
 
@@ -150,6 +161,9 @@ UdpSocket.prototype._onReceive = function(info) {
 UdpSocket.prototype.send = function(buffer, offset, length, port, address, callback) {
   var self = this
 
+  if (typeof port !== 'number') throw new Error('invalid port')
+  if (!isValidIP(address, this._ipRegex)) throw new Error('invalid address')
+
   if (offset !== 0) throw new Error('Non-zero offset not supported yet')
 
   if (this._state === STATE.UNBOUND) {
@@ -182,6 +196,7 @@ UdpSocket.prototype.send = function(buffer, offset, length, port, address, callb
 
   self._debug('sending', buffer, str)
   Sockets.send(this._id, str, +port, address, function(err) {
+    err = normalizeError(err)
     if (err) {
       self._debug('send failed', err)
       return callback(err)
@@ -212,6 +227,7 @@ UdpSocket.prototype.setBroadcast = function(flag) {
   }
 
   Sockets.setBroadcast(this._id, flag, function(err) {
+    err = normalizeError(err)
     if (err) {
       self._debug('failed to set broadcast', err)
       return self.emit('error', err)
@@ -247,4 +263,16 @@ UdpSocket.prototype.unref = function() {
   // anything?
 }
 
-module.exports = UdpSocket
+function isValidIP (address, ipRegex) {
+  if (typeof address !== 'string') return false
+
+  return ipRegex.test(address)
+}
+
+function normalizeError (err) {
+  if (err) {
+    if (typeof err === 'string') err = new Error(err)
+
+    return err
+  }
+}
