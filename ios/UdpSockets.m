@@ -50,7 +50,8 @@ RCT_EXPORT_METHOD(bind:(nonnull NSNumber*)cId
     NSError *error = nil;
     if (![client bind:port address:address error:&error])
     {
-        callback(@[error]);
+        NSString* msg = [[error userInfo] valueForKey:@"NSLocalizedFailureReason"];
+        callback(@[msg]);
         return;
     }
 
@@ -91,7 +92,8 @@ RCT_EXPORT_METHOD(setBroadcast:(nonnull NSNumber*)cId
     NSError *error = nil;
     if (![client setBroadcast:flag error:&error])
     {
-        callback(@[error]);
+        NSString* msg = [[error userInfo] valueForKey:@"NSLocalizedFailureReason"];
+        callback(@[msg]);
         return;
     }
     callback(@[[NSNull null]]);

@@ -95,7 +95,8 @@ NSString *const RCTUDPErrorDomain = @"RCTUDPErrorDomain";
   NSNumber* tagNum = [NSNumber numberWithLong:msgTag];
   RCTResponseSenderBlock callback = [_pendingSends objectForKey:tagNum];
   if (callback) {
-    callback(@[error]);
+    NSString* msg = [[error userInfo] valueForKey:@"NSLocalizedFailureReason"];
+    callback(@[msg]);
     [_pendingSends removeObjectForKey:tagNum];
   }
 }
