@@ -16,6 +16,6 @@
 
 @interface UdpSockets : NSObject<SocketClientDelegate, RCTBridgeModule>
 
-@property(retain, nonatomic)NSMutableDictionary *clients;
++(NSMutableDictionary *)clients;
 
 @end

@@ -20,10 +20,31 @@ RCT_EXPORT_MODULE()
 
 @synthesize bridge = _bridge;
 
++ (void) initialize {
+  [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(closeAllSockets)
+                                               name:RCTReloadNotification
+                                             object:nil];
+}
+
++(NSMutableDictionary*) clients
+{
+    static NSMutableDictionary* c = nil;
+
+    static dispatch_once_t oncePredicate;
+
+    dispatch_once(&oncePredicate, ^{
+      c = [[NSMutableDictionary alloc] init];
+    });
+
+    return c;
+}
+
 RCT_EXPORT_METHOD(createSocket:(nonnull NSNumber*)cId withOptions:(NSDictionary*)options)
 {
-    if (!_clients) _clients = [[NSMutableDictionary alloc] init];
+//    if (!UdpSockets._clients) UdpSockets._clients = [[NSMutableDictionary alloc] init];
 
+    NSMutableDictionary* _clients = [UdpSockets clients];
     if (!cId) {
         RCTLogError(@"%@.createSocket called with nil id parameter.", [self class]);
         return;
@@ -44,7 +65,7 @@ RCT_EXPORT_METHOD(bind:(nonnull NSNumber*)cId
                   address:(NSString *)address
                   callback:(RCTResponseSenderBlock)callback)
 {
-    UdpSocketClient* client = [self findClient:cId callback:callback];
+    UdpSocketClient* client = [UdpSockets findClient:cId callback:callback];
     if (!client) return;
 
     NSError *error = nil;
@@ -63,7 +84,7 @@ RCT_EXPORT_METHOD(send:(nonnull NSNumber*)cId
                   port:(int)port
                   address:(NSString*)address
                   callback:(RCTResponseSenderBlock)callback) {
-    UdpSocketClient* client = [self findClient:cId callback:callback];
+    UdpSocketClient* client = [UdpSockets findClient:cId callback:callback];
     if (!client) return;
 
     // iOS7+
@@ -74,19 +95,13 @@ RCT_EXPORT_METHOD(send:(nonnull NSNumber*)cId
 
 RCT_EXPORT_METHOD(close:(nonnull NSNumber*)cId
                   callback:(RCTResponseSenderBlock)callback) {
-    UdpSocketClient* client = [self findClient:cId callback:callback];
-    if (!client) return;
-
-    [client close];
-    [_clients removeObjectForKey:cId];
-
-    if (callback) callback(@[]);
+    [UdpSockets closeClient:cId callback:callback];
 }
 
 RCT_EXPORT_METHOD(setBroadcast:(nonnull NSNumber*)cId
                   flag:(BOOL)flag
                   callback:(RCTResponseSenderBlock)callback) {
-    UdpSocketClient* client = [self findClient:cId callback:callback];
+    UdpSocketClient* client = [UdpSockets findClient:cId callback:callback];
     if (!client) return;
 
     NSError *error = nil;
@@ -101,6 +116,7 @@ RCT_EXPORT_METHOD(setBroadcast:(nonnull NSNumber*)cId
 
 - (void) onData:(UdpSocketClient*) client data:(NSData *)data host:(NSString *)host port:(uint16_t)port
 {
+    NSMutableDictionary* _clients = [UdpSockets clients];
     NSString *clientID = [[_clients allKeysForObject:client] objectAtIndex:0];
     NSString *base64String = [data base64EncodedStringWithOptions:0];
     [self.bridge.eventDispatcher sendDeviceEventWithName:[NSString stringWithFormat:@"udp-%@-data", clientID]
@@ -112,8 +128,9 @@ RCT_EXPORT_METHOD(setBroadcast:(nonnull NSNumber*)cId
      ];
 }
 
--(UdpSocketClient*)findClient:(nonnull NSNumber*)cId callback:(RCTResponseSenderBlock)callback
++(UdpSocketClient*)findClient:(nonnull NSNumber*)cId callback:(RCTResponseSenderBlock)callback
 {
+    NSMutableDictionary* _clients = [UdpSockets clients];
     UdpSocketClient *client = [_clients objectForKey:cId];
     if (!client) {
         if (!callback) {
@@ -127,6 +144,26 @@ RCT_EXPORT_METHOD(setBroadcast:(nonnull NSNumber*)cId
     }
 
     return client;
+}
+
++(void) closeClient:(nonnull NSNumber*)cId
+           callback:(RCTResponseSenderBlock)callback
+{
+    NSMutableDictionary* _clients = [UdpSockets clients];
+    UdpSocketClient* client = [UdpSockets findClient:cId callback:callback];
+    if (!client) return;
+
+    [client close];
+    [_clients removeObjectForKey:cId];
+
+    if (callback) callback(@[]);
+}
+
++(void) closeAllSockets {
+    NSMutableDictionary* _clients = [UdpSockets clients];
+    for (NSNumber* cId in _clients) {
+        [UdpSockets closeClient:cId callback:nil];
+    }
 }
 
 @end
