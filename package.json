@@ -1,6 +1,6 @@
 {
   "name": "react-native-udp",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "node's dgram API for react-native",
   "main": "UdpSockets.js",
   "scripts": {
