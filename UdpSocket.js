@@ -122,15 +122,16 @@ UdpSocket.prototype._onReceive = function(info) {
   this._debug('received', info)
 
   // from base64 string
-  var buf = base64.toByteArray(info.data)
+  var buf = typeof Buffer === 'undefined'
+    ? base64.toByteArray(info.data)
+    : new Buffer(info.data, 'base64')
+
   var rinfo = {
     address: info.address,
     port: info.port,
     family: 'IPv4', // not necessarily
     size: buf.length
   }
-
-  if (typeof Buffer !== 'undefined') buf = new Buffer(buf, 'binary')
 
   this.emit('message', buf, rinfo)
 }
