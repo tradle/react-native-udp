@@ -5,22 +5,16 @@
  *  Created by Andy Prock on 9/24/15.
  */
 
-package com.tradle.react;
+ package com.tradle.react;
 
-import android.os.AsyncTask;
-import android.util.Base64;
+ import android.os.AsyncTask;
+ import android.util.Base64;
 
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.DatagramChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
+ import java.io.IOException;
+ import java.lang.ref.WeakReference;
+ import java.net.DatagramPacket;
+ import java.net.DatagramSocket;
+ import java.net.InetAddress;
 
 /**
  * This is a specialized AsyncTask that receives data from a socket in the background, and
@@ -31,24 +25,24 @@ public class UdpReceiverTask extends AsyncTask<Void, Void, Void> {
     private static final String TAG = "UdpReceiverTask";
     private static final int MAX_UDP_DATAGRAM_LEN = 1024;
 
-    private DatagramChannel mChannel;
+    private DatagramSocket mSocket;
     private WeakReference<OnDataReceivedListener> mReceiverListener;
 
     /**
      * An {@link AsyncTask} that blocks to receive data from a socket.
      * Received data is sent via the {@link OnDataReceivedListener}
      */
-    public UdpReceiverTask(DatagramChannel channel, UdpReceiverTask.OnDataReceivedListener
+    public UdpReceiverTask(DatagramSocket socket, UdpReceiverTask.OnDataReceivedListener
             receiverListener) {
-        this.mChannel = channel;
+        this.mSocket = socket;
         this.mReceiverListener = new WeakReference<>(receiverListener);
     }
 
     /**
      * Returns the UdpReceiverTask's DatagramChannel.
      */
-    public DatagramChannel getChannel() {
-        return mChannel;
+    public DatagramSocket getSocket() {
+        return mSocket;
     }
 
     /**
@@ -58,29 +52,17 @@ public class UdpReceiverTask extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... a) {
         OnDataReceivedListener receiverListener = mReceiverListener.get();
 
-        Selector selector = null;
-        try {
-            selector = Selector.open();
-            mChannel.register(selector, SelectionKey.OP_READ);
-        } catch (ClosedChannelException cce) {
-            if (receiverListener != null) {
-                receiverListener.didReceiveError(cce.getMessage());
-            }
-        } catch (IOException ioe) {
-            if (receiverListener != null) {
-                receiverListener.didReceiveError(ioe.getMessage());
-            }
-        }
+        final byte[] buffer = new byte[MAX_UDP_DATAGRAM_LEN];
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 
-        final ByteBuffer packet = ByteBuffer.allocate(MAX_UDP_DATAGRAM_LEN);
-        while(!isCancelled()){
+        while (!isCancelled()) {
             try {
-                if(selector.selectNow() >= 1){
-                    final InetSocketAddress address = (InetSocketAddress) mChannel.receive(packet);
-                    String base64Data = Base64.encodeToString(packet.array(), Base64.NO_WRAP);
-                    receiverListener.didReceiveData(base64Data, address.getHostName(), address.getPort());
-                    packet.clear();
-                }
+                mSocket.receive(packet);
+
+                final InetAddress address = packet.getAddress();
+                final String base64Data = Base64.encodeToString(packet.getData(), packet.getOffset(),
+                    packet.getLength(), Base64.NO_WRAP);
+                receiverListener.didReceiveData(base64Data, address.getHostName(), packet.getPort());
             } catch (IOException ioe) {
                 if (receiverListener != null) {
                     receiverListener.didReceiveError(ioe.getMessage());
@@ -102,17 +84,7 @@ public class UdpReceiverTask extends AsyncTask<Void, Void, Void> {
      */
     @Override
     protected void onCancelled() {
-        OnDataReceivedListener receiverListener = mReceiverListener.get();
-
-        if (mChannel != null && mChannel.isOpen()){
-            try {
-                mChannel.close();
-            } catch (IOException ioe) {
-                if (receiverListener != null) {
-                    receiverListener.didReceiveError(ioe.getMessage());
-                }
-            }
-        }
+//        mSocket.close();
     }
 
     /**

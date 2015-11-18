@@ -11,9 +11,9 @@ import android.os.AsyncTask;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.SocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.DatagramChannel;
 
 /**
  * Specialized AsyncTask that transmits data in the background, and notifies listeners of the result.
@@ -21,11 +21,11 @@ import java.nio.channels.DatagramChannel;
 public class UdpSenderTask extends AsyncTask<UdpSenderTask.SenderPacket, Void, Void> {
     private static final String TAG = "UdpSenderTask";
 
-    private DatagramChannel mChannel;
+    private DatagramSocket mSocket;
     private WeakReference<OnDataSentListener> mListener;
 
-    public UdpSenderTask(DatagramChannel channel, OnDataSentListener listener) {
-        this.mChannel = channel;
+    public UdpSenderTask(DatagramSocket socket, OnDataSentListener listener) {
+        this.mSocket = socket;
         this.mListener = new WeakReference<>(listener);
     }
 
@@ -34,7 +34,9 @@ public class UdpSenderTask extends AsyncTask<UdpSenderTask.SenderPacket, Void, V
         OnDataSentListener listener = mListener.get();
 
         try {
-            mChannel.send(params[0].data, params[0].socketAddress);
+            SenderPacket packet = params[0];
+            mSocket.send(new DatagramPacket(packet.data, packet.data.length, packet.socketAddress));
+
             if (listener != null) {
                 listener.onDataSent(this);
             }
@@ -56,7 +58,7 @@ public class UdpSenderTask extends AsyncTask<UdpSenderTask.SenderPacket, Void, V
      */
     public static class SenderPacket {
         SocketAddress socketAddress;
-        ByteBuffer data;
+        byte[] data;
     }
 
     /**

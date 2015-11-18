@@ -247,12 +247,20 @@ UdpSocket.prototype.setMulticastLoopback = function(flag, callback) {
   // nothing yet
 }
 
-UdpSocket.prototype.addMembership = function(multicastAddress, multicastInterface, callback) {
-  // nothing yet
+UdpSocket.prototype.addMembership = function(multicastAddress) {
+  if (this._state !== STATE.BOUND) {
+    throw new Error('you must bind before addMembership()')
+  }
+
+  Sockets.addMembership(this._id, multicastAddress);
 }
 
-UdpSocket.prototype.dropMembership = function(multicastAddress, multicastInterface, callback) {
-  // nothing yet
+UdpSocket.prototype.dropMembership = function(multicastAddress) {
+  if (this._state !== STATE.BOUND) {
+    throw new Error('you must bind before addMembership()')
+  }
+
+  Sockets.dropMembership(this._id, multicastAddress);
 }
 
 UdpSocket.prototype.ref = function() {

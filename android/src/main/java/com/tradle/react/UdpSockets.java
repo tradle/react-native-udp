@@ -5,27 +5,29 @@
  *  Created by Andy Prock on 9/24/15.
  */
 
-package com.tradle.react;
+ package com.tradle.react;
 
-import android.support.annotation.Nullable;
-import android.util.SparseArray;
+ import android.content.Context;
+ import android.net.wifi.WifiManager;
+ import android.support.annotation.Nullable;
+ import android.util.SparseArray;
 
-import com.facebook.common.logging.FLog;
-import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.Callback;
-import com.facebook.react.bridge.GuardedAsyncTask;
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
-import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
+ import com.facebook.common.logging.FLog;
+ import com.facebook.react.bridge.Arguments;
+ import com.facebook.react.bridge.Callback;
+ import com.facebook.react.bridge.GuardedAsyncTask;
+ import com.facebook.react.bridge.ReactApplicationContext;
+ import com.facebook.react.bridge.ReactContext;
+ import com.facebook.react.bridge.ReactContextBaseJavaModule;
+ import com.facebook.react.bridge.ReactMethod;
+ import com.facebook.react.bridge.ReadableMap;
+ import com.facebook.react.bridge.WritableMap;
+ import com.facebook.react.modules.core.DeviceEventManagerModule;
 
-import java.io.IOException;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.concurrent.ExecutionException;
+ import java.io.IOException;
+ import java.net.SocketException;
+ import java.net.UnknownHostException;
+ import java.util.concurrent.ExecutionException;
 
 /**
  * The NativeModule in charge of storing active {@link UdpSocketClient}s, and acting as an api layer.
@@ -33,6 +35,7 @@ import java.util.concurrent.ExecutionException;
 public final class UdpSockets extends ReactContextBaseJavaModule
   implements UdpSocketClient.OnDataReceivedListener, UdpSocketClient.OnRuntimeExceptionListener {
     private static final String TAG = "UdpSockets";
+    private WifiManager.MulticastLock mMulticastLock;
 
     private SparseArray<UdpSocketClient> mClients = new SparseArray<>();
     private boolean mShuttingDown = false;
@@ -155,6 +158,65 @@ public final class UdpSockets extends ReactContextBaseJavaModule
     }
 
     /**
+     * Joins a multi-cast group
+     */
+    @ReactMethod
+    public void addMembership(final Integer cId, final String multicastAddress) {
+        new GuardedAsyncTask<Void, Void>(getReactApplicationContext()) {
+            @Override
+            protected void doInBackgroundGuarded(Void... params) {
+                UdpSocketClient client = findClient(cId, null);
+                if (client == null) {
+                    return;
+                }
+
+                if (mMulticastLock == null) {
+                    WifiManager wifiMgr = (WifiManager) getReactApplicationContext()
+                        .getSystemService(Context.WIFI_SERVICE);
+                    mMulticastLock = wifiMgr.createMulticastLock("react-native-udp");
+                    mMulticastLock.setReferenceCounted(true);
+                }
+
+                if (!client.isMulticast()) {
+                    // acquire the multi-cast lock, IF this is the
+                    // first addMembership call for this client.
+                    mMulticastLock.acquire();
+                }
+
+                try {
+                    client.addMembership(multicastAddress);
+                } catch (IOException ioe) {
+                    // an exception occurred
+                    FLog.e(TAG, "addMembership", ioe);
+                }
+            }
+        }.execute();
+    }
+
+    /**
+     * Leaves a multi-cast group
+     */
+    @ReactMethod
+    public void dropMembership(final Integer cId, final String multicastAddress) {
+        new GuardedAsyncTask<Void, Void>(getReactApplicationContext()) {
+            @Override
+            protected void doInBackgroundGuarded(Void... params) {
+                UdpSocketClient client = findClient(cId, null);
+                if (client == null) {
+                    return;
+                }
+
+                try {
+                    client.dropMembership(multicastAddress);
+                } catch (IOException ioe) {
+                    // an exception occurred
+                    FLog.e(TAG, "dropMembership", ioe);
+                }
+            }
+        }.execute();
+    }
+
+    /**
      * Sends udp data via the {@link UdpSocketClient}
      */
     @ReactMethod
@@ -191,6 +253,11 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                 UdpSocketClient client = findClient(cId, callback);
                 if (client == null) {
                     return;
+                }
+
+                if (client.isMulticast() && mMulticastLock.isHeld()) {
+                    // drop the multi-cast lock if this is a multi-cast client
+                    mMulticastLock.release();
                 }
 
                 try {

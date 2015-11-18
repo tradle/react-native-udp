@@ -114,6 +114,16 @@ RCT_EXPORT_METHOD(setBroadcast:(nonnull NSNumber*)cId
     callback(@[[NSNull null]]);
 }
 
+RCT_EXPORT_METHOD(addMembership:(nonnull NSNumber*)cId
+                  multicastAddress:(NSString *)address) {
+    /* nop */
+}
+
+RCT_EXPORT_METHOD(dropMembership:(nonnull NSNumber*)cId
+                  multicastAddress:(NSString *)address) {
+    /* nop */
+}
+
 - (void) onData:(UdpSocketClient*) client data:(NSData *)data host:(NSString *)host port:(uint16_t)port
 {
     NSMutableDictionary* _clients = [UdpSockets clients];

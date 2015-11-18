@@ -11,17 +11,16 @@ import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.util.Base64;
 
-import com.facebook.common.logging.FLog;
 import com.facebook.react.bridge.Callback;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.nio.channels.DatagramChannel;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,13 +37,21 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
     private UdpReceiverTask mReceiverTask;
 
     private final Map<UdpSenderTask, Callback> mPendingSends;
-    private DatagramChannel mSenderChannel;
+    private DatagramSocket mSocket;
 
     private UdpSocketClient(Builder builder) {
         this.mReceiverListener = builder.receiverListener;
         this.mExceptionListener = builder.exceptionListener;
         this.mReuseAddress = builder.reuse;
         this.mPendingSends = new ConcurrentHashMap<>();
+    }
+
+    /**
+     * Checks to see if client is receiving multicast packets.
+     * @return boolean true if receiving multicast packets, else false.
+     */
+    public boolean isMulticast() {
+        return (mReceiverTask != null && mReceiverTask.getSocket() instanceof MulticastSocket);
     }
 
     /**
@@ -60,9 +67,9 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
      *             binding.
      */
     public void bind(Integer port, @Nullable String address) throws IOException {
-        DatagramChannel receiverChannel = DatagramChannel.open();
-        receiverChannel.configureBlocking(false);
-        mReceiverTask = new UdpReceiverTask(receiverChannel, this);
+        mSocket = new DatagramSocket(null);
+
+        mReceiverTask = new UdpReceiverTask(mSocket, this);
 
         SocketAddress socketAddress;
         if (address != null) {
@@ -71,12 +78,50 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
             socketAddress = new InetSocketAddress(port);
         }
 
-        DatagramSocket socket = receiverChannel.socket();
-        socket.setReuseAddress(mReuseAddress);
-        socket.bind(socketAddress);
+        mSocket.setReuseAddress(mReuseAddress);
+        mSocket.bind(socketAddress);
 
         // begin listening for data in the background
         mReceiverTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    /**
+     * Adds this socket to the specified multicast group. Rebuilds the receiver task with a
+     * MulticastSocket.
+     *
+     * @param address the multicast group to join
+     * @throws UnknownHostException
+     * @throws IOException
+     */
+    public void addMembership(String address) throws UnknownHostException, IOException {
+        final int port = mReceiverTask.getSocket().getLocalPort();
+        mReceiverTask.cancel(true);
+
+        final MulticastSocket socket = new MulticastSocket(port);
+        socket.joinGroup(InetAddress.getByName(address));
+
+        mReceiverTask = new UdpReceiverTask(socket, this);
+
+        // begin listening for data in the background
+        mReceiverTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    /**
+     * Removes this socket from the specified multicast group.
+     *
+     * @param address the multicast group to leave
+     * @throws UnknownHostException
+     * @throws IOException
+     */
+    public void dropMembership(String address) throws UnknownHostException, IOException {
+        if (mReceiverTask != null && mReceiverTask.getSocket() instanceof MulticastSocket) {
+            if (!mReceiverTask.isCancelled()) {
+                mReceiverTask.cancel(true);
+            }
+
+            final MulticastSocket socket = (MulticastSocket) mReceiverTask.getSocket();
+            socket.leaveGroup(InetAddress.getByName(address));
+        }
     }
 
     /**
@@ -87,18 +132,18 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
      * @param address destination address
      * @param callback callback for results
      * @throws UnknownHostException
+     * @throws IOException
      */
     public void send(String base64String, Integer port, String address, @Nullable Callback callback) throws UnknownHostException, IOException {
-        if (null == mSenderChannel || !mSenderChannel.isOpen()) {
-            mSenderChannel = DatagramChannel.open();
-            mSenderChannel.configureBlocking(true);
+        if (null == mSocket || !mSocket.isBound()) {
+            return;
         }
 
         byte[] data = Base64.decode(base64String, Base64.NO_WRAP);
 
-        UdpSenderTask task = new UdpSenderTask(mSenderChannel, this);
+        UdpSenderTask task = new UdpSenderTask(mSocket, this);
         UdpSenderTask.SenderPacket packet = new UdpSenderTask.SenderPacket();
-        packet.data = ByteBuffer.wrap(data);
+        packet.data = data;
         packet.socketAddress = new InetSocketAddress(address, port);
 
         if (callback != null) {
@@ -115,9 +160,9 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
      */
     public void setBroadcast(boolean flag) throws SocketException {
         if (mReceiverTask != null) {
-            DatagramChannel channel = mReceiverTask.getChannel();
-            if (channel != null) {
-                channel.socket().setBroadcast(flag);
+            DatagramSocket socket = mReceiverTask.getSocket();
+            if (socket != null) {
+                socket.setBroadcast(flag);
             }
         }
     }
@@ -129,10 +174,14 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
         if (mReceiverTask != null && !mReceiverTask.isCancelled()) {
             // stop the receiving task, and close the channel
             mReceiverTask.cancel(true);
+            if (!mReceiverTask.getSocket().isClosed()) {
+                mReceiverTask.getSocket().close();
+            }
         }
 
-        if (mSenderChannel != null && mSenderChannel.isOpen()) {
-            mSenderChannel.close();
+        if (mSocket != null && !mSocket.isClosed()) {
+            mSocket.close();
+            mSocket = null;
         }
     }
 

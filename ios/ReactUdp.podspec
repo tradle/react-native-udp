@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name                = 'ReactUdp'
-  s.version             = '0.1.0'
+  s.version             = '1.1.1'
   s.summary             = 'node\'s dgram API in React Native.'
   s.description         = <<-DESC
                             Enables accessing udp sockets in React Native.
