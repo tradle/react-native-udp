@@ -5,29 +5,29 @@
  *  Created by Andy Prock on 9/24/15.
  */
 
- package com.tradle.react;
+package com.tradle.react;
 
- import android.content.Context;
- import android.net.wifi.WifiManager;
- import android.support.annotation.Nullable;
- import android.util.SparseArray;
+import android.content.Context;
+import android.net.wifi.WifiManager;
+import android.support.annotation.Nullable;
+import android.util.SparseArray;
 
- import com.facebook.common.logging.FLog;
- import com.facebook.react.bridge.Arguments;
- import com.facebook.react.bridge.Callback;
- import com.facebook.react.bridge.GuardedAsyncTask;
- import com.facebook.react.bridge.ReactApplicationContext;
- import com.facebook.react.bridge.ReactContext;
- import com.facebook.react.bridge.ReactContextBaseJavaModule;
- import com.facebook.react.bridge.ReactMethod;
- import com.facebook.react.bridge.ReadableMap;
- import com.facebook.react.bridge.WritableMap;
- import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.facebook.common.logging.FLog;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.GuardedAsyncTask;
+import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.bridge.ReactContextBaseJavaModule;
+import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 
- import java.io.IOException;
- import java.net.SocketException;
- import java.net.UnknownHostException;
- import java.util.concurrent.ExecutionException;
+import java.io.IOException;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.concurrent.ExecutionException;
 
 /**
  * The NativeModule in charge of storing active {@link UdpSocketClient}s, and acting as an api layer.
@@ -185,6 +185,12 @@ public final class UdpSockets extends ReactContextBaseJavaModule
 
                 try {
                     client.addMembership(multicastAddress);
+                } catch (IllegalStateException ise) {
+                    // an exception occurred
+                    FLog.e(TAG, "addMembership", ise);
+                } catch (UnknownHostException uhe) {
+                    // an exception occurred
+                    FLog.e(TAG, "addMembership", uhe);
                 } catch (IOException ioe) {
                     // an exception occurred
                     FLog.e(TAG, "addMembership", ioe);
@@ -232,7 +238,9 @@ public final class UdpSockets extends ReactContextBaseJavaModule
 
                 try {
                     client.send(base64String, port, address, callback);
-                } catch (UnknownHostException uhe) {
+                } catch (IllegalStateException ise) {
+                    callback.invoke(UdpErrorUtil.getError(null, ise.getMessage()));
+                }catch (UnknownHostException uhe) {
                     callback.invoke(UdpErrorUtil.getError(null, uhe.getMessage()));
                 } catch (IOException ioe) {
                     // an exception occurred

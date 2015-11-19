@@ -10,6 +10,7 @@ package com.tradle.react;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.util.Base64;
+import android.util.Pair;
 
 import com.facebook.react.bridge.Callback;
 
@@ -47,11 +48,11 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
     }
 
     /**
-     * Checks to see if client is receiving multicast packets.
-     * @return boolean true if receiving multicast packets, else false.
+     * Checks to see if client part of a multi-cast group.
+     * @return boolean true IF the socket is part of a multi-cast group.
      */
     public boolean isMulticast() {
-        return (mReceiverTask != null && mReceiverTask.getSocket() instanceof MulticastSocket);
+        return (mSocket != null && mSocket instanceof MulticastSocket);
     }
 
     /**
@@ -69,7 +70,7 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
     public void bind(Integer port, @Nullable String address) throws IOException {
         mSocket = new DatagramSocket(null);
 
-        mReceiverTask = new UdpReceiverTask(mSocket, this);
+        mReceiverTask = new UdpReceiverTask();
 
         SocketAddress socketAddress;
         if (address != null) {
@@ -82,7 +83,8 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
         mSocket.bind(socketAddress);
 
         // begin listening for data in the background
-        mReceiverTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        mReceiverTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                new Pair<DatagramSocket, UdpReceiverTask.OnDataReceivedListener>(mSocket, this));
     }
 
     /**
@@ -92,18 +94,30 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
      * @param address the multicast group to join
      * @throws UnknownHostException
      * @throws IOException
+     * @throws IllegalStateException if socket is not bound.
      */
-    public void addMembership(String address) throws UnknownHostException, IOException {
-        final int port = mReceiverTask.getSocket().getLocalPort();
-        mReceiverTask.cancel(true);
+    public void addMembership(String address) throws UnknownHostException, IOException, IllegalStateException {
+        if (null == mSocket || !mSocket.isBound()) {
+            throw new IllegalStateException("Socket is not bound.");
+        }
 
-        final MulticastSocket socket = new MulticastSocket(port);
-        socket.joinGroup(InetAddress.getByName(address));
+        if (!(mSocket instanceof MulticastSocket)) {
+            // cancel the current receiver task
+            if (mReceiverTask != null) {
+                mReceiverTask.cancel(true);
+            }
 
-        mReceiverTask = new UdpReceiverTask(socket, this);
+            // tear down the DatagramSocket, and rebuild as a MulticastSocket
+            final int port = mSocket.getLocalPort();
+            mSocket.close();
+            mSocket = new MulticastSocket(port);
 
-        // begin listening for data in the background
-        mReceiverTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            // begin listening for data in the background
+            mReceiverTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                    new Pair<DatagramSocket, UdpReceiverTask.OnDataReceivedListener>(mSocket, this));
+        }
+
+        ((MulticastSocket) mSocket).joinGroup(InetAddress.getByName(address));
     }
 
     /**
@@ -114,13 +128,8 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
      * @throws IOException
      */
     public void dropMembership(String address) throws UnknownHostException, IOException {
-        if (mReceiverTask != null && mReceiverTask.getSocket() instanceof MulticastSocket) {
-            if (!mReceiverTask.isCancelled()) {
-                mReceiverTask.cancel(true);
-            }
-
-            final MulticastSocket socket = (MulticastSocket) mReceiverTask.getSocket();
-            socket.leaveGroup(InetAddress.getByName(address));
+        if (mSocket instanceof MulticastSocket) {
+            ((MulticastSocket) mSocket).leaveGroup(InetAddress.getByName(address));
         }
     }
 
@@ -133,10 +142,12 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
      * @param callback callback for results
      * @throws UnknownHostException
      * @throws IOException
+     * @throws IllegalStateException if socket is not bound.
      */
-    public void send(String base64String, Integer port, String address, @Nullable Callback callback) throws UnknownHostException, IOException {
+    public void send(String base64String, Integer port, String address, @Nullable Callback callback)
+            throws UnknownHostException, IllegalStateException, IOException {
         if (null == mSocket || !mSocket.isBound()) {
-            return;
+            throw new IllegalStateException("Socket is not bound.");
         }
 
         byte[] data = Base64.decode(base64String, Base64.NO_WRAP);
@@ -159,11 +170,8 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
      * Sets the socket to enable broadcasts.
      */
     public void setBroadcast(boolean flag) throws SocketException {
-        if (mReceiverTask != null) {
-            DatagramSocket socket = mReceiverTask.getSocket();
-            if (socket != null) {
-                socket.setBroadcast(flag);
-            }
+        if (mSocket != null) {
+            mSocket.setBroadcast(flag);
         }
     }
 
@@ -172,13 +180,11 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
      */
     public void close() throws IOException {
         if (mReceiverTask != null && !mReceiverTask.isCancelled()) {
-            // stop the receiving task, and close the channel
+            // stop the receiving task
             mReceiverTask.cancel(true);
-            if (!mReceiverTask.getSocket().isClosed()) {
-                mReceiverTask.getSocket().close();
-            }
         }
 
+        // close the socket
         if (mSocket != null && !mSocket.isClosed()) {
             mSocket.close();
             mSocket = null;

@@ -5,59 +5,44 @@
  *  Created by Andy Prock on 9/24/15.
  */
 
- package com.tradle.react;
+package com.tradle.react;
 
- import android.os.AsyncTask;
- import android.util.Base64;
+import android.os.AsyncTask;
+import android.util.Base64;
+import android.util.Pair;
 
- import java.io.IOException;
- import java.lang.ref.WeakReference;
- import java.net.DatagramPacket;
- import java.net.DatagramSocket;
- import java.net.InetAddress;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 /**
  * This is a specialized AsyncTask that receives data from a socket in the background, and
  * notifies it's listener when data is received.  This is not threadsafe, the listener
  * should handle synchronicity.
  */
-public class UdpReceiverTask extends AsyncTask<Void, Void, Void> {
+public class UdpReceiverTask extends AsyncTask<Pair<DatagramSocket, UdpReceiverTask.OnDataReceivedListener>, Void, Void> {
     private static final String TAG = "UdpReceiverTask";
     private static final int MAX_UDP_DATAGRAM_LEN = 1024;
-
-    private DatagramSocket mSocket;
-    private WeakReference<OnDataReceivedListener> mReceiverListener;
-
-    /**
-     * An {@link AsyncTask} that blocks to receive data from a socket.
-     * Received data is sent via the {@link OnDataReceivedListener}
-     */
-    public UdpReceiverTask(DatagramSocket socket, UdpReceiverTask.OnDataReceivedListener
-            receiverListener) {
-        this.mSocket = socket;
-        this.mReceiverListener = new WeakReference<>(receiverListener);
-    }
-
-    /**
-     * Returns the UdpReceiverTask's DatagramChannel.
-     */
-    public DatagramSocket getSocket() {
-        return mSocket;
-    }
 
     /**
      * An infinite loop to block and read data from the socket.
      */
     @Override
-    protected Void doInBackground(Void... a) {
-        OnDataReceivedListener receiverListener = mReceiverListener.get();
+    protected Void doInBackground(Pair<DatagramSocket, UdpReceiverTask.OnDataReceivedListener>... params) {
+        if (params.length > 1) {
+            throw new IllegalArgumentException("This task is only for a single socket/listener pair.");
+        }
+
+        DatagramSocket socket = params[0].first;
+        OnDataReceivedListener receiverListener = params[0].second;
 
         final byte[] buffer = new byte[MAX_UDP_DATAGRAM_LEN];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 
         while (!isCancelled()) {
             try {
-                mSocket.receive(packet);
+                socket.receive(packet);
 
                 final InetAddress address = packet.getAddress();
                 final String base64Data = Base64.encodeToString(packet.getData(), packet.getOffset(),
@@ -77,14 +62,6 @@ public class UdpReceiverTask extends AsyncTask<Void, Void, Void> {
         }
 
         return null;
-    }
-
-    /**
-     * Close if cancelled.
-     */
-    @Override
-    protected void onCancelled() {
-//        mSocket.close();
     }
 
     /**
