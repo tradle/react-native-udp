@@ -1,0 +1,15 @@
+{
+  "name": "rctsockets",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "react-native start"
+  },
+  "browser": {
+    "dgram": "react-native-udp"
+  },
+  "dependencies": {
+    "react-native": "^0.14.2",
+    "react-native-udp": "../../"
+  }
+}

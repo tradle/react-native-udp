@@ -103,4 +103,4 @@ function toByteArray(obj) {
   return new Uint8Array(uint);
 }
 
-AppRegistry.registerComponent('react-native-udp', () => rctsockets);
+AppRegistry.registerComponent('rctsockets', () => rctsockets);

@@ -1,0 +1,5 @@
+rootProject.name = 'rctsockets'
+
+include ':app'
+include ':react-native-udp'
+project(':react-native-udp').projectDir = new File(settingsDir, '../node_modules/react-native-udp/android')

@@ -87,7 +87,7 @@ _only if you want to write require('dgram') in your javascript_
 
 ### JS
 
-_see/run index.js for a complete example, but basically it's just like dgram_
+_see/run [index.js](examples/rctsockets) for a complete example, but basically it's just like dgram_
 
 ```js
 var dgram = require('dgram')
