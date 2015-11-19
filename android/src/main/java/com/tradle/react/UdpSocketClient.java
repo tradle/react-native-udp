@@ -107,6 +107,8 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
                 mReceiverTask.cancel(true);
             }
 
+            mReceiverTask = new UdpReceiverTask();
+
             // tear down the DatagramSocket, and rebuild as a MulticastSocket
             final int port = mSocket.getLocalPort();
             mSocket.close();
