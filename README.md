@@ -92,7 +92,7 @@ _see/run [index.js](examples/rctsockets) for a complete example, but basically i
 ```js
 var dgram = require('dgram')
 // OR, if not shimming via package.json "browser" field:
-// var dgram = require('UdpSockets')
+// var dgram = require('react-native-udp')
 var socket = dgram.createSocket('udp4')
 socket.bind(12345)
 socket.once('listening', function() {
