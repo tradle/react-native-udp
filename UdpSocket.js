@@ -194,7 +194,6 @@ UdpSocket.prototype.send = function(buffer, offset, length, port, address, callb
     throw new Error('invalid message format')
   }
 
-  self._debug('sending', buffer, str)
   Sockets.send(this._id, str, +port, address, function(err) {
     err = normalizeError(err)
     if (err) {
@@ -202,7 +201,6 @@ UdpSocket.prototype.send = function(buffer, offset, length, port, address, callb
       return callback(err)
     }
 
-    self._debug('sent')
     callback()
   })
 }
