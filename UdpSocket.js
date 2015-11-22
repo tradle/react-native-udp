@@ -62,8 +62,7 @@ function UdpSocket(options, onmessage) {
 inherits(UdpSocket, EventEmitter)
 
 UdpSocket.prototype._debug = function() {
-  // for now
-  if (typeof DEBUG !== 'undefined' && DEBUG) {
+  if (__DEV__) {
     var args = [].slice.call(arguments)
     args.unshift('socket-' + this._id)
     console.log.apply(console, args)
