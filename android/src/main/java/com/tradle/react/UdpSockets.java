@@ -37,7 +37,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
     private static final String TAG = "UdpSockets";
     private WifiManager.MulticastLock mMulticastLock;
 
-    private SparseArray<UdpSocketClient> mClients = new SparseArray<>();
+    private SparseArray<UdpSocketClient> mClients = new SparseArray<UdpSocketClient>();
     private boolean mShuttingDown = false;
 
     public UdpSockets(ReactApplicationContext reactContext) {

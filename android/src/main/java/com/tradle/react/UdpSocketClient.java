@@ -44,7 +44,7 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
         this.mReceiverListener = builder.receiverListener;
         this.mExceptionListener = builder.exceptionListener;
         this.mReuseAddress = builder.reuse;
-        this.mPendingSends = new ConcurrentHashMap<>();
+        this.mPendingSends = new ConcurrentHashMap<UdpSenderTask, Callback>();
     }
 
     /**

@@ -26,7 +26,7 @@ public class UdpSenderTask extends AsyncTask<UdpSenderTask.SenderPacket, Void, V
 
     public UdpSenderTask(DatagramSocket socket, OnDataSentListener listener) {
         this.mSocket = socket;
-        this.mListener = new WeakReference<>(listener);
+        this.mListener = new WeakReference<OnDataSentListener>(listener);
     }
 
     @Override
