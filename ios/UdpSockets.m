@@ -44,7 +44,7 @@ RCT_EXPORT_METHOD(createSocket:(nonnull NSNumber*)cId withOptions:(NSDictionary*
 {
 //    if (!UdpSockets._clients) UdpSockets._clients = [[NSMutableDictionary alloc] init];
 
-    NSMutableDictionary* _clients = [UdpSockets clients];
+    NSMutableDictionary<NSNumber *, UdpSocketClient *> *_clients = [UdpSockets clients];
     if (!cId) {
         RCTLogError(@"%@.createSocket called with nil id parameter.", [self class]);
         return;
@@ -126,8 +126,8 @@ RCT_EXPORT_METHOD(dropMembership:(nonnull NSNumber*)cId
 
 - (void) onData:(UdpSocketClient*) client data:(NSData *)data host:(NSString *)host port:(uint16_t)port
 {
-    NSMutableDictionary* _clients = [UdpSockets clients];
-    NSString *clientID = [[_clients allKeysForObject:client] objectAtIndex:0];
+    NSMutableDictionary<NSNumber *, UdpSocketClient *> *_clients = [UdpSockets clients];
+    NSNumber *clientID = [[_clients allKeysForObject:client] objectAtIndex:0];
     NSString *base64String = [data base64EncodedStringWithOptions:0];
     [self.bridge.eventDispatcher sendDeviceEventWithName:[NSString stringWithFormat:@"udp-%@-data", clientID]
                                                     body:@{
@@ -140,7 +140,7 @@ RCT_EXPORT_METHOD(dropMembership:(nonnull NSNumber*)cId
 
 +(UdpSocketClient*)findClient:(nonnull NSNumber*)cId callback:(RCTResponseSenderBlock)callback
 {
-    NSMutableDictionary* _clients = [UdpSockets clients];
+    NSMutableDictionary<NSNumber *, UdpSocketClient *> *_clients = [UdpSockets clients];
     UdpSocketClient *client = [_clients objectForKey:cId];
     if (!client) {
         if (!callback) {
@@ -159,7 +159,7 @@ RCT_EXPORT_METHOD(dropMembership:(nonnull NSNumber*)cId
 +(void) closeClient:(nonnull NSNumber*)cId
            callback:(RCTResponseSenderBlock)callback
 {
-    NSMutableDictionary* _clients = [UdpSockets clients];
+    NSMutableDictionary<NSNumber *, UdpSocketClient *> *_clients = [UdpSockets clients];
     UdpSocketClient* client = [UdpSockets findClient:cId callback:callback];
     if (!client) return;
 
@@ -170,7 +170,7 @@ RCT_EXPORT_METHOD(dropMembership:(nonnull NSNumber*)cId
 }
 
 +(void) closeAllSockets {
-    NSMutableDictionary* _clients = [UdpSockets clients];
+    NSMutableDictionary<NSNumber *, UdpSocketClient *> *_clients = [UdpSockets clients];
     for (NSNumber* cId in _clients) {
         [UdpSockets closeClient:cId callback:nil];
     }

@@ -21,7 +21,7 @@ NSString *const RCTUDPErrorDomain = @"RCTUDPErrorDomain";
   NSString* _address;
   GCDAsyncUdpSocket *_udpSocket;
   id<SocketClientDelegate> _clientDelegate;
-  NSMutableDictionary* _pendingSends;
+  NSMutableDictionary<NSNumber *, RCTResponseSenderBlock> *_pendingSends;
   long tag;
 }
 
