@@ -22,6 +22,7 @@ NSString *const RCTUDPErrorDomain = @"RCTUDPErrorDomain";
   GCDAsyncUdpSocket *_udpSocket;
   id<SocketClientDelegate> _clientDelegate;
   NSMutableDictionary<NSNumber *, RCTResponseSenderBlock> *_pendingSends;
+  NSLock *_lock;
   long tag;
 }
 
@@ -42,9 +43,40 @@ NSString *const RCTUDPErrorDomain = @"RCTUDPErrorDomain";
   if (self) {
     _clientDelegate = aDelegate;
     _pendingSends = [NSMutableDictionary dictionary];
+    _lock = [[NSLock alloc] init];
   }
 
   return self;
+}
+
+- (void)setPendingSend:(RCTResponseSenderBlock)callback forKey:(NSNumber *)key
+{
+  [_lock lock];
+  @try {
+    [_pendingSends setObject:callback forKey:key];
+  } @finally {
+    [_lock unlock];
+  }
+}
+
+- (RCTResponseSenderBlock)getPendingSend:(NSNumber *)key
+{
+  [_lock lock];
+  @try {
+    return [_pendingSends objectForKey:key];
+  } @finally {
+    [_lock unlock];
+  }
+}
+
+- (void)dropPendingSend:(NSNumber *)key
+{
+  [_lock lock];
+  @try {
+    [_pendingSends removeObjectForKey:key];
+  } @finally {
+    [_lock unlock];
+  }
 }
 
 - (BOOL) bind:(u_int16_t)port address:(NSString *)address error:(NSError **) error
@@ -82,10 +114,10 @@ NSString *const RCTUDPErrorDomain = @"RCTUDPErrorDomain";
 - (void)udpSocket:(GCDAsyncUdpSocket *)sock didSendDataWithTag:(long)msgTag
 {
   NSNumber* tagNum = [NSNumber numberWithLong:msgTag];
-  RCTResponseSenderBlock callback = [_pendingSends objectForKey:tagNum];
+  RCTResponseSenderBlock callback = [self getPendingSend:tagNum];
   if (callback) {
     callback(@[]);
-    [_pendingSends removeObjectForKey:tagNum];
+    [self dropPendingSend:tagNum];
   }
 }
 
@@ -93,11 +125,11 @@ NSString *const RCTUDPErrorDomain = @"RCTUDPErrorDomain";
 {
 //  NSError* err = [self sendFailedError:[error description]];
   NSNumber* tagNum = [NSNumber numberWithLong:msgTag];
-  RCTResponseSenderBlock callback = [_pendingSends objectForKey:tagNum];
+  RCTResponseSenderBlock callback = [self getPendingSend:tagNum];
   if (callback) {
     NSString* msg = [[error userInfo] valueForKey:@"NSLocalizedFailureReason"];
     callback(@[msg]);
-    [_pendingSends removeObjectForKey:tagNum];
+    [self dropPendingSend:tagNum];
   }
 }
 
@@ -108,7 +140,7 @@ remoteAddress:(NSString *)address
 {
   [_udpSocket sendData:data toHost:address port:port withTimeout:-1 tag:tag];
   if (callback) {
-    [_pendingSends setObject:callback forKey:[NSNumber numberWithLong:tag]];
+    [self setPendingSend:callback forKey:[NSNumber numberWithLong:tag]];
   }
 
   tag++;
