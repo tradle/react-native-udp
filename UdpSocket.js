@@ -21,6 +21,8 @@ var {
 var Sockets = NativeModules.UdpSockets
 var base64 = require('base64-js')
 var ipRegex = require('ip-regex')
+// RFC 952 hostname format
+var hostnameRegex = /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$/;
 var noop = function () {}
 var instances = 0
 var STATE = {
@@ -162,7 +164,7 @@ UdpSocket.prototype.send = function(buffer, offset, length, port, address, callb
   var self = this
 
   if (typeof port !== 'number') throw new Error('invalid port')
-  if (!isValidIP(address, this._ipRegex)) throw new Error('invalid address')
+  if (!isValidIpOrHostname(address, this._ipRegex)) throw new Error('invalid address')
 
   if (offset !== 0) throw new Error('Non-zero offset not supported yet')
 
@@ -269,10 +271,10 @@ UdpSocket.prototype.unref = function() {
   // anything?
 }
 
-function isValidIP (address, ipRegex) {
+function isValidIpOrHostname (address, ipRegex) {
   if (typeof address !== 'string') return false
 
-  return ipRegex.test(address)
+  return ipRegex.test(address) || hostnameRegex.test(address);
 }
 
 function normalizeError (err) {
