@@ -74,7 +74,7 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
 
         SocketAddress socketAddress;
         if (address != null) {
-            socketAddress = new InetSocketAddress(address, port);
+            socketAddress = new InetSocketAddress(InetAddress.getByName(address), port);
         } else {
             socketAddress = new InetSocketAddress(port);
         }
@@ -157,7 +157,7 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
         UdpSenderTask task = new UdpSenderTask(mSocket, this);
         UdpSenderTask.SenderPacket packet = new UdpSenderTask.SenderPacket();
         packet.data = data;
-        packet.socketAddress = new InetSocketAddress(address, port);
+        packet.socketAddress = new InetSocketAddress(InetAddress.getByName(address), port);
 
         if (callback != null) {
             synchronized (mPendingSends) {
