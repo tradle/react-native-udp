@@ -38,6 +38,7 @@ typedef enum RCTUDPError RCTUDPError;
 @property (nonatomic, retain) NSString* id;
 @property (nonatomic, retain) NSString* host;
 @property (nonatomic) u_int16_t port;
+@property (nonatomic, weak) id<SocketClientDelegate> clientDelegate;
 
 ///---------------------------------------------------------------------------------------
 /// @name Class Methods
