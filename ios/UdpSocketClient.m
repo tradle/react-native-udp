@@ -127,7 +127,7 @@ NSString *const RCTUDPErrorDomain = @"RCTUDPErrorDomain";
   RCTResponseSenderBlock callback = [self getPendingSend:tagNum];
   if (callback) {
     NSString *msg = error.localizedFailureReason ?: error.localizedDescription;
-    callback(@[msg ?: @"unkown error"]);
+    callback(@[msg ?: @"unknown error"]);
     [self dropPendingSend:tagNum];
   }
 }

@@ -62,7 +62,7 @@ RCT_EXPORT_METHOD(bind:(nonnull NSNumber*)cId
     if (![client bind:port address:address error:&error])
     {
         NSString *msg = error.localizedFailureReason ?: error.localizedDescription;
-        callback(@[msg ?: @"unkown error when binding"]);
+        callback(@[msg ?: @"unknown error when binding"]);
         return;
     }
 
@@ -98,7 +98,7 @@ RCT_EXPORT_METHOD(setBroadcast:(nonnull NSNumber*)cId
     if (![client setBroadcast:flag error:&error])
     {
         NSString *msg = error.localizedFailureReason ?: error.localizedDescription;
-        callback(@[msg ?: @"unkown error when setBroadcast"]);
+        callback(@[msg ?: @"unknown error when setBroadcast"]);
         return;
     }
     callback(@[[NSNull null]]);
