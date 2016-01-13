@@ -120,8 +120,6 @@ UdpSocket.prototype.close = function() {
 }
 
 UdpSocket.prototype._onReceive = function(info) {
-  this._debug('received', info)
-
   // from base64 string
   var buf = typeof Buffer === 'undefined'
     ? base64.toByteArray(info.data)
