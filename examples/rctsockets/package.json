@@ -3,13 +3,15 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "react-native start"
+    "start": "node node_modules/react-native/local-cli/cli.js start"
   },
   "browser": {
     "dgram": "react-native-udp"
   },
   "dependencies": {
-    "react-native": "^0.14.2",
+    "base64-js": "^1.1.2",
+    "react": "15.2.1",
+    "react-native": "0.29.2",
     "react-native-udp": "../../"
   }
 }
