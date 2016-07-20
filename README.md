@@ -13,59 +13,32 @@ This module is used by [Tradle](https://github.com/tradle)
 npm install --save react-native-udp
 ```
 
-### `iOS`
+## Link in the native dependency
 
-* Drag UdpSockets.xcodeproj from node_modules/react-native-udp/ios into your XCode project.
-
-* Click on the project in XCode, go to Build Phases, then Link Binary With Libraries and add `libUdpSockets.a`
+```
+rnpm link react-native-udp
+```
 
 ### `Android`
 
-* `android/settings.gradle`
-
-```gradle
-...
-include ':react-native-udp'
-project(':react-native-udp').projectDir = new File(settingsDir, '../node_modules/react-native-udp/android')
-```
-* `android/app/build.gradle`
-
-```gradle
-dependencies {
-	...
-	compile project(':react-native-udp')
-}
-```
-
-* register module (in MainActivity.java)
+* Register and load the Native Module in your Main application
+([import](examples/rctsockets/android/app/src/main/java/com/rctsockets/MainApplication.java#L11), [getPackages](examples/rctsockets/android/app/src/main/java/com/rctsockets/MainApplication.java#L28))
+  * __Note:__ prior to react-native 0.29.2, this should happen in your Main Activity
 
 ```java
 ...
 
-import com.tradle.react.*; // <--- import
+import com.tradle.react.UdpSocketsModule;			// <--- import //
 
-public class MainActivity extends Activity implements DefaultHardwareBackBtnHandler {
+public class MainApplication extends Application implements ReactApplication {
 	...
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        mReactRootView = new ReactRootView(this);
-
-        mReactInstanceManager = ReactInstanceManager.builder()
-                .setApplication(getApplication())
-                .setBundleAssetName("index.android.bundle")
-                .setJSMainModuleName("index.android")
-                .addPackage(new MainReactPackage())
-                .addPackage(new UdpSocketsModule())           // <- add here
-                .setUseDeveloperSupport(BuildConfig.DEBUG)
-                .setInitialLifecycleState(LifecycleState.RESUMED)
-                .build();
-
-        mReactRootView.startReactApplication(mReactInstanceManager, "YourProject", null);
-
-        setContentView(mReactRootView);
-    }
+	@Override
+	protected List<ReactPackage> getPackages() {
+		return Arrays.<ReactPackage>asList(
+			new MainReactPackage(),
+			new UdpSocketsModule()				// <- add here //
+		);
+	}
 }
 ```
 
