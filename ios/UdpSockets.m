@@ -127,6 +127,16 @@ RCT_EXPORT_METHOD(dropMembership:(nonnull NSNumber*)cId
      ];
 }
 
+-(void) onClose:(UdpSocketClient *)client error:(NSString *)error
+{
+    NSNumber *clientID = [[_clients allKeysForObject:client] objectAtIndex:0];
+    [self.bridge.eventDispatcher sendDeviceEventWithName:[NSString stringWithFormat:@"udp-%@-close", clientID]
+                                                    body:@{
+                                                           @"error": error
+                                                           }
+     ];
+}
+
 -(UdpSocketClient*)findClient:(nonnull NSNumber*)cId callback:(RCTResponseSenderBlock)callback
 {
     UdpSocketClient *client = _clients[cId];

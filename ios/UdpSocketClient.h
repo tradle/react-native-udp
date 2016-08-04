@@ -30,6 +30,7 @@ typedef enum RCTUDPError RCTUDPError;
 @protocol SocketClientDelegate <NSObject>
 
 - (void)onData:(UdpSocketClient*) client data:(NSData *)data host:(NSString*) host port:(uint16_t) port;
+- (void)onClose:(UdpSocketClient*) client error:(NSString*) error;
 
 @end
 

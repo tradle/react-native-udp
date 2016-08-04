@@ -50,6 +50,9 @@ function UdpSocket(options, onmessage) {
   this._subscription = DeviceEventEmitter.addListener(
     'udp-' + this._id + '-data', this._onReceive.bind(this)
   );
+  this._closeSubscription = DeviceEventEmitter.addListener(
+    'udp-' + this._id + '-close', this._onClose.bind(this)
+  );
 
   // ensure compatibility with node's EventEmitter
   if (!this.on) this.on = this.addListener.bind(this)
@@ -114,6 +117,7 @@ UdpSocket.prototype.close = function() {
   this._destroyed = true
   this._debug('closing')
   this._subscription.remove();
+  this._closeSubscription.remove();
 
   Sockets.close(this._id, this._debug.bind(this, 'closed'))
   this.emit('close')
@@ -133,6 +137,13 @@ UdpSocket.prototype._onReceive = function(info) {
   }
 
   this.emit('message', buf, rinfo)
+}
+
+UdpSocket.prototype._onClose = function(info) {
+  if (info.error) {
+    this.emit('error', normalizeError(info.error));
+  }
+  this.close();
 }
 
 /**
