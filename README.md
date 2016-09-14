@@ -16,7 +16,7 @@ npm install --save react-native-udp
 ## Link in the native dependency
 
 ```
-rnpm link react-native-udp
+react-native link react-native-udp
 ```
 
 ### `Android`
