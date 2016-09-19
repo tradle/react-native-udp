@@ -39,6 +39,7 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
 
     private final Map<UdpSenderTask, Callback> mPendingSends;
     private DatagramSocket mSocket;
+    private boolean mIsMulticastSocket = false;
 
     private UdpSocketClient(Builder builder) {
         this.mReceiverListener = builder.receiverListener;
@@ -52,7 +53,7 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
      * @return boolean true IF the socket is part of a multi-cast group.
      */
     public boolean isMulticast() {
-        return (mSocket != null && mSocket instanceof MulticastSocket);
+        return mIsMulticastSocket;
     }
 
     /**
@@ -68,7 +69,7 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
      *             binding.
      */
     public void bind(Integer port, @Nullable String address) throws IOException {
-        mSocket = new DatagramSocket(null);
+        mSocket = new MulticastSocket(null);
 
         mReceiverTask = new UdpReceiverTask();
 
@@ -101,25 +102,8 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
             throw new IllegalStateException("Socket is not bound.");
         }
 
-        if (!(mSocket instanceof MulticastSocket)) {
-            // cancel the current receiver task
-            if (mReceiverTask != null) {
-                mReceiverTask.cancel(true);
-            }
-
-            mReceiverTask = new UdpReceiverTask();
-
-            // tear down the DatagramSocket, and rebuild as a MulticastSocket
-            final int port = mSocket.getLocalPort();
-            mSocket.close();
-            mSocket = new MulticastSocket(port);
-
-            // begin listening for data in the background
-            mReceiverTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
-                    new Pair<DatagramSocket, UdpReceiverTask.OnDataReceivedListener>(mSocket, this));
-        }
-
         ((MulticastSocket) mSocket).joinGroup(InetAddress.getByName(address));
+        mIsMulticastSocket = true;
     }
 
     /**
@@ -130,9 +114,8 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
      * @throws IOException
      */
     public void dropMembership(String address) throws UnknownHostException, IOException {
-        if (mSocket instanceof MulticastSocket) {
-            ((MulticastSocket) mSocket).leaveGroup(InetAddress.getByName(address));
-        }
+        ((MulticastSocket) mSocket).leaveGroup(InetAddress.getByName(address));
+        mIsMulticastSocket = false;
     }
 
     /**
