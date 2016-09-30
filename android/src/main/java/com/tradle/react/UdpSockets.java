@@ -177,22 +177,26 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                     mMulticastLock.setReferenceCounted(true);
                 }
 
-                if (!client.isMulticast()) {
-                    // acquire the multi-cast lock, IF this is the
-                    // first addMembership call for this client.
+               try {
                     mMulticastLock.acquire();
-                }
-
-                try {
                     client.addMembership(multicastAddress);
                 } catch (IllegalStateException ise) {
                     // an exception occurred
+                    if (mMulticastLock != null && mMulticastLock.isHeld()) {
+                        mMulticastLock.release();
+                    }
                     FLog.e(TAG, "addMembership", ise);
                 } catch (UnknownHostException uhe) {
                     // an exception occurred
+                    if (mMulticastLock != null && mMulticastLock.isHeld()) {
+                        mMulticastLock.release();
+                    }
                     FLog.e(TAG, "addMembership", uhe);
                 } catch (IOException ioe) {
                     // an exception occurred
+                    if (mMulticastLock != null && mMulticastLock.isHeld()) {
+                        mMulticastLock.release();
+                    }
                     FLog.e(TAG, "addMembership", ioe);
                 }
             }
@@ -217,6 +221,10 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                 } catch (IOException ioe) {
                     // an exception occurred
                     FLog.e(TAG, "dropMembership", ioe);
+                } finally {
+                    if (mMulticastLock != null && mMulticastLock.isHeld()) {
+                        mMulticastLock.release();
+                    }
                 }
             }
         }.execute();
@@ -263,7 +271,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                     return;
                 }
 
-                if (client.isMulticast() && mMulticastLock.isHeld()) {
+                if (mMulticastLock != null && mMulticastLock.isHeld() && client.isMulticast()) {
                     // drop the multi-cast lock if this is a multi-cast client
                     mMulticastLock.release();
                 }
