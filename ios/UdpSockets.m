@@ -106,12 +106,22 @@ RCT_EXPORT_METHOD(setBroadcast:(nonnull NSNumber*)cId
 
 RCT_EXPORT_METHOD(addMembership:(nonnull NSNumber*)cId
                   multicastAddress:(NSString *)address) {
-    /* nop */
+     UdpSocketClient *client = _clients[cId];
+    
+    if (!client) return;
+    
+    NSError *error = nil;
+    [client joinMulticastGroup:address error:&error];
 }
 
 RCT_EXPORT_METHOD(dropMembership:(nonnull NSNumber*)cId
                   multicastAddress:(NSString *)address) {
-    /* nop */
+    UdpSocketClient *client = _clients[cId];
+    
+    if (!client) return;
+    
+    NSError *error = nil;
+    [client leaveMulticastGroup:address error:&error];
 }
 
 - (void) onData:(UdpSocketClient*) client data:(NSData *)data host:(NSString *)host port:(uint16_t)port
