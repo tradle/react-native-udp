@@ -66,6 +66,22 @@ typedef enum RCTUDPError RCTUDPError;
 - (BOOL)bind:(u_int16_t) port address:(NSString*) address error:(NSError**)error;
 
 /**
+ * Join multicast groupt
+ *
+ * @param address
+ * @return true if joined, false if there was an error
+ */
+- (BOOL)joinMulticastGroup:(NSString *)address error:(NSError **) error;
+
+/**
+ * leave multicast groupt
+ *
+ * @param address
+ * @return true if joined, false if there was an error
+ */
+- (BOOL)leaveMulticastGroup:(NSString *)address error:(NSError **) error;
+
+/**
  * send data to another host and port
  *
  * @param port

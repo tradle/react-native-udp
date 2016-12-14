@@ -110,6 +110,24 @@ NSString *const RCTUDPErrorDomain = @"RCTUDPErrorDomain";
   return result && [_udpSocket beginReceiving:error];
 }
 
+- (BOOL)joinMulticastGroup:(NSString *)address error:(NSError **) error
+{
+    if(![_udpSocket joinMulticastGroup:address error:&error]){
+        NSLog(@"Error joining multicast group: %@", error);
+        return false;
+    }
+    return true;
+}
+
+- (BOOL)leaveMulticastGroup:(NSString *)address error:(NSError **) error
+{
+    if(![_udpSocket leaveMulticastGroup:address error:&error]){
+        NSLog(@"Error leaving multicast group: %@", error);
+        return false;
+    }
+    return true;
+}
+
 - (void)udpSocket:(GCDAsyncUdpSocket *)sock didSendDataWithTag:(long)msgTag
 {
   NSNumber* tagNum = [NSNumber numberWithLong:msgTag];
