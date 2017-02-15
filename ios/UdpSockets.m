@@ -6,11 +6,11 @@
 //  Copyright (c) 2015 Tradle, Inc. All rights reserved.
 //
 
-#import "RCTAssert.h"
-#import "RCTBridge.h"
-#import "RCTConvert.h"
-#import "RCTEventDispatcher.h"
-#import "RCTLog.h"
+#import <React/RCTAssert.h>
+#import <React/RCTBridge.h>
+#import <React/RCTConvert.h>
+#import <React/RCTEventDispatcher.h>
+#import <React/RCTLog.h>
 #import "UdpSockets.h"
 #import "UdpSocketClient.h"
 
