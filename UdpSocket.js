@@ -31,6 +31,8 @@ var STATE = {
   BOUND: 2
 }
 
+const noop = function () {}
+
 module.exports = UdpSocket
 
 function UdpSocket(options, onmessage) {
@@ -108,15 +110,25 @@ UdpSocket.prototype.bind = function(port, address, callback) {
   })
 }
 
-UdpSocket.prototype.close = function() {
-  if (this._destroyed) return
+UdpSocket.prototype.close = function (callback=noop) {
+  if (this._destroyed) {
+    return process.nextTick(callback)
+  }
 
-  this._destroyed = true
+  this.once('close', callback)
+  if (this._destroying) return
+
+  this._destroying = true
   this._debug('closing')
   this._subscription.remove();
 
-  Sockets.close(this._id, this._debug.bind(this, 'closed'))
-  this.emit('close')
+  Sockets.close(this._id, err => {
+    if (err) return this.emit('error', err)
+
+    this._destroyed = true
+    this._debug('closed')
+    this.emit('close')
+  })
 }
 
 UdpSocket.prototype._onReceive = function(info) {
