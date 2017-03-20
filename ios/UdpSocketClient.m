@@ -93,6 +93,9 @@ NSString *const RCTUDPErrorDomain = @"RCTUDPErrorDomain";
   _address = address;
 
   _udpSocket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:[self methodQueue]];
+  
+  [_udpSocket setMaxReceiveIPv4BufferSize:UINT16_MAX];
+  
   BOOL result;
   if (address) {
     struct sockaddr_in ip;
