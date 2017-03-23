@@ -95,6 +95,7 @@ NSString *const RCTUDPErrorDomain = @"RCTUDPErrorDomain";
   _udpSocket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:[self methodQueue]];
   
   [_udpSocket setMaxReceiveIPv4BufferSize:UINT16_MAX];
+  [_udpSocket setMaxReceiveIPv6BufferSize:UINT16_MAX];
   
   BOOL result;
   if (address) {
