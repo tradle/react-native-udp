@@ -89,7 +89,7 @@ socket.on('message', function(msg, rinfo) {
 If you want to send and receive node Buffer objects, you'll have to "npm install buffer" and set it as a global for UdpSockets to pick it up:
 
 ```js
-global.Buffer = global.Buffer || require('buffer').Buffer
+const Buffer = global.Buffer = global.Buffer || require('buffer')
 ```
 
 ### TODO
