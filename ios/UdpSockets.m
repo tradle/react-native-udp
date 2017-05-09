@@ -34,7 +34,7 @@ RCT_EXPORT_MODULE()
 RCT_EXPORT_METHOD(createSocket:(nonnull NSNumber*)cId withOptions:(NSDictionary*)options)
 {
     if (!cId) {
-        RCTLogError(@"%@.createSocket called with nil id parameter.", [self class]);
+        RCTLogWarn(@"%@.createSocket called with nil id parameter.", [self class]);
         return;
     }
 
@@ -43,7 +43,7 @@ RCT_EXPORT_METHOD(createSocket:(nonnull NSNumber*)cId withOptions:(NSDictionary*
     }
 
     if (_clients[cId]) {
-        RCTLogError(@"%@.createSocket called twice with the same id.", [self class]);
+        RCTLogWarn(@"%@.createSocket called twice with the same id %@.", [self class], cId);
         return;
     }
 
@@ -142,7 +142,7 @@ RCT_EXPORT_METHOD(dropMembership:(nonnull NSNumber*)cId
     UdpSocketClient *client = _clients[cId];
     if (!client) {
         if (!callback) {
-            RCTLogError(@"%@.missing callback parameter.", [self class]);
+            RCTLogWarn(@"%@.missing callback parameter.", [self class]);
         }
         else {
             callback(@[[NSString stringWithFormat:@"no client found with id %@", cId]]);
