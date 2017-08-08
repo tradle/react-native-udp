@@ -112,7 +112,7 @@ UdpSocket.prototype.bind = function(port, address, callback) {
 
 UdpSocket.prototype.close = function (callback=noop) {
   if (this._destroyed) {
-    return process.nextTick(callback)
+    return setImmediate(callback)
   }
 
   this.once('close', callback)
