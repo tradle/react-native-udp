@@ -31,8 +31,6 @@ var STATE = {
   BOUND: 2
 }
 
-const noop = function () {}
-
 module.exports = UdpSocket
 
 function UdpSocket(options, onmessage) {
