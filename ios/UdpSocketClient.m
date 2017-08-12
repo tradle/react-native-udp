@@ -96,6 +96,7 @@ NSString *const RCTUDPErrorDomain = @"RCTUDPErrorDomain";
   
   [_udpSocket setMaxReceiveIPv4BufferSize:UINT16_MAX];
   [_udpSocket setMaxReceiveIPv6BufferSize:UINT16_MAX];
+  [_udpSocket enableReusePort:true error:error];
   
   BOOL result;
   if (address) {
