@@ -43,6 +43,7 @@ function UdpSocket(options, onmessage) {
   }
 
   this.type = options.type
+  this.reusePort = options && options.reusePort
   this._ipv = Number(this.type.slice(3))
   this._ipRegex = ipRegex['v' + this._ipv]({ exact: true })
   this._id = instances++
@@ -89,7 +90,7 @@ UdpSocket.prototype.bind = function(port, address, callback) {
 
   this._state = STATE.BINDING
   this._debug('binding, address:', address, 'port:', port)
-  Sockets.bind(this._id, port, address, function(err, addr) {
+  Sockets.bind(this._id, port, address, {reusePort: this.reusePort }, function(err, addr) {
     err = normalizeError(err)
     if (err) {
       // questionable: may want to self-destruct and

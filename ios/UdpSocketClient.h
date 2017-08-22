@@ -61,9 +61,10 @@ typedef enum RCTUDPError RCTUDPError;
  *
  * @param port
  * @param host ip address
+ * @param options (such as 'reusePort')
  * @return true if bound, false if there was an error
  */
-- (BOOL)bind:(u_int16_t) port address:(NSString*) address error:(NSError**)error;
+- (BOOL)bind:(u_int16_t) port address:(NSString*)address options:(NSDictionary *)options error:(NSError**)error;
 
 /**
  * Join multicast groupt
