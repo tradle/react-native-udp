@@ -47,7 +47,7 @@ public class UdpReceiverTask extends AsyncTask<Pair<DatagramSocket, UdpReceiverT
                 final InetAddress address = packet.getAddress();
                 final String base64Data = Base64.encodeToString(packet.getData(), packet.getOffset(),
                     packet.getLength(), Base64.NO_WRAP);
-                receiverListener.didReceiveData(base64Data, address.getHostName(), packet.getPort());
+                receiverListener.didReceiveData(base64Data, address.getHostAddress(), packet.getPort());
             } catch (IOException ioe) {
                 if (receiverListener != null) {
                     receiverListener.didReceiveError(ioe.getMessage());
