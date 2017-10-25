@@ -16,7 +16,8 @@ var inherits = require('inherits')
 var EventEmitter = require('events').EventEmitter
 var {
   DeviceEventEmitter,
-  NativeModules
+  NativeModules,
+  Platform
 } = require('react-native');
 var Sockets = NativeModules.UdpSockets
 var base64 = require('base64-js')
@@ -90,7 +91,12 @@ UdpSocket.prototype.bind = function(port, address, callback) {
 
   this._state = STATE.BINDING
   this._debug('binding, address:', address, 'port:', port)
-  Sockets.bind(this._id, port, address, {reusePort: this.reusePort }, function(err, addr) {
+  const bindArgs = [this._id, port, address]
+  if (Platform.OS === 'ios') {
+    bindArgs.push({ reusePort: this.reusePort })
+  }
+
+  Sockets.bind(...bindArgs, function(err, addr) {
     err = normalizeError(err)
     if (err) {
       // questionable: may want to self-destruct and
