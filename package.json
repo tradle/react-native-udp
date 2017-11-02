@@ -6,6 +6,12 @@
   "scripts": {
     "start": "exit 1"
   },
+  "files": [
+    "android",
+    "ios",
+    "UdpSocket.js",
+    "UdpSockets.js"
+  ],
   "browser": {
     "dgram": "./UdpSockets.js"
   },
