@@ -166,6 +166,8 @@ enum GCDAsyncUdpSocketConfig
 	
 	uint16_t max4ReceiveSize;
 	uint32_t max6ReceiveSize;
+    
+    uint16_t maxSendSize;
 	
 	int socket4FD;
 	int socket6FD;
@@ -350,14 +352,14 @@ enum GCDAsyncUdpSocketConfig
 	return [self initWithDelegate:nil delegateQueue:NULL socketQueue:sq];
 }
 
-- (id)initWithDelegate:(id)aDelegate delegateQueue:(dispatch_queue_t)dq
+- (id)initWithDelegate:(id <GCDAsyncUdpSocketDelegate>)aDelegate delegateQueue:(dispatch_queue_t)dq
 {
 	LogTrace();
 	
 	return [self initWithDelegate:aDelegate delegateQueue:dq socketQueue:NULL];
 }
 
-- (id)initWithDelegate:(id)aDelegate delegateQueue:(dispatch_queue_t)dq socketQueue:(dispatch_queue_t)sq
+- (id)initWithDelegate:(id <GCDAsyncUdpSocketDelegate>)aDelegate delegateQueue:(dispatch_queue_t)dq socketQueue:(dispatch_queue_t)sq
 {
 	LogTrace();
 	
@@ -373,9 +375,11 @@ enum GCDAsyncUdpSocketConfig
 			#endif
 		}
 		
-		max4ReceiveSize = 9216;
-		max6ReceiveSize = 9216;
+		max4ReceiveSize = 65535;
+		max6ReceiveSize = 65535;
 		
+        maxSendSize = 65535;
+        
 		socket4FD = SOCKET_NULL;
 		socket6FD = SOCKET_NULL;
 		
@@ -488,7 +492,7 @@ enum GCDAsyncUdpSocketConfig
 	}
 }
 
-- (void)setDelegate:(id)newDelegate synchronously:(BOOL)synchronously
+- (void)setDelegate:(id <GCDAsyncUdpSocketDelegate>)newDelegate synchronously:(BOOL)synchronously
 {
 	dispatch_block_t block = ^{
 		delegate = newDelegate;
@@ -505,12 +509,12 @@ enum GCDAsyncUdpSocketConfig
 	}
 }
 
-- (void)setDelegate:(id)newDelegate
+- (void)setDelegate:(id <GCDAsyncUdpSocketDelegate>)newDelegate
 {
 	[self setDelegate:newDelegate synchronously:NO];
 }
 
-- (void)synchronouslySetDelegate:(id)newDelegate
+- (void)synchronouslySetDelegate:(id <GCDAsyncUdpSocketDelegate>)newDelegate
 {
 	[self setDelegate:newDelegate synchronously:YES];
 }
@@ -566,7 +570,7 @@ enum GCDAsyncUdpSocketConfig
 	[self setDelegateQueue:newDelegateQueue synchronously:YES];
 }
 
-- (void)getDelegate:(id *)delegatePtr delegateQueue:(dispatch_queue_t *)delegateQueuePtr
+- (void)getDelegate:(id <GCDAsyncUdpSocketDelegate> *)delegatePtr delegateQueue:(dispatch_queue_t *)delegateQueuePtr
 {
 	if (dispatch_get_specific(IsOnSocketQueueOrTargetQueueKey))
 	{
@@ -588,7 +592,7 @@ enum GCDAsyncUdpSocketConfig
 	}
 }
 
-- (void)setDelegate:(id)newDelegate delegateQueue:(dispatch_queue_t)newDelegateQueue synchronously:(BOOL)synchronously
+- (void)setDelegate:(id <GCDAsyncUdpSocketDelegate>)newDelegate delegateQueue:(dispatch_queue_t)newDelegateQueue synchronously:(BOOL)synchronously
 {
 	dispatch_block_t block = ^{
 		
@@ -613,12 +617,12 @@ enum GCDAsyncUdpSocketConfig
 	}
 }
 
-- (void)setDelegate:(id)newDelegate delegateQueue:(dispatch_queue_t)newDelegateQueue
+- (void)setDelegate:(id <GCDAsyncUdpSocketDelegate>)newDelegate delegateQueue:(dispatch_queue_t)newDelegateQueue
 {
 	[self setDelegate:newDelegate delegateQueue:newDelegateQueue synchronously:NO];
 }
 
-- (void)synchronouslySetDelegate:(id)newDelegate delegateQueue:(dispatch_queue_t)newDelegateQueue
+- (void)synchronouslySetDelegate:(id <GCDAsyncUdpSocketDelegate>)newDelegate delegateQueue:(dispatch_queue_t)newDelegateQueue
 {
 	[self setDelegate:newDelegate delegateQueue:newDelegateQueue synchronously:YES];
 }
@@ -864,6 +868,37 @@ enum GCDAsyncUdpSocketConfig
 		dispatch_async(socketQueue, block);
 }
 
+- (void)setMaxSendBufferSize:(uint16_t)max
+{
+    dispatch_block_t block = ^{
+        
+        LogVerbose(@"%@ %u", THIS_METHOD, (unsigned)max);
+        
+        maxSendSize = max;
+    };
+    
+    if (dispatch_get_specific(IsOnSocketQueueOrTargetQueueKey))
+        block();
+    else
+        dispatch_async(socketQueue, block);
+}
+
+- (uint16_t)maxSendBufferSize
+{
+    __block uint16_t result = 0;
+    
+    dispatch_block_t block = ^{
+        
+        result = maxSendSize;
+    };
+    
+    if (dispatch_get_specific(IsOnSocketQueueOrTargetQueueKey))
+        block();
+    else
+        dispatch_sync(socketQueue, block);
+    
+    return result;
+}
 
 - (id)userData
 {
@@ -906,9 +941,9 @@ enum GCDAsyncUdpSocketConfig
 {
 	LogTrace();
 	
-	if (delegateQueue && [delegate respondsToSelector:@selector(udpSocket:didConnectToAddress:)])
+	__strong id theDelegate = delegate;
+	if (delegateQueue && [theDelegate respondsToSelector:@selector(udpSocket:didConnectToAddress:)])
 	{
-		id theDelegate = delegate;
 		NSData *address = [anAddress copy]; // In case param is NSMutableData
 		
 		dispatch_async(delegateQueue, ^{ @autoreleasepool {
@@ -922,10 +957,9 @@ enum GCDAsyncUdpSocketConfig
 {
 	LogTrace();
 	
-	if (delegateQueue && [delegate respondsToSelector:@selector(udpSocket:didNotConnect:)])
+	__strong id theDelegate = delegate;
+	if (delegateQueue && [theDelegate respondsToSelector:@selector(udpSocket:didNotConnect:)])
 	{
-		id theDelegate = delegate;
-		
 		dispatch_async(delegateQueue, ^{ @autoreleasepool {
 			
 			[theDelegate udpSocket:self didNotConnect:error];
@@ -937,10 +971,9 @@ enum GCDAsyncUdpSocketConfig
 {
 	LogTrace();
 	
-	if (delegateQueue && [delegate respondsToSelector:@selector(udpSocket:didSendDataWithTag:)])
+	__strong id theDelegate = delegate;
+	if (delegateQueue && [theDelegate respondsToSelector:@selector(udpSocket:didSendDataWithTag:)])
 	{
-		id theDelegate = delegate;
-		
 		dispatch_async(delegateQueue, ^{ @autoreleasepool {
 			
 			[theDelegate udpSocket:self didSendDataWithTag:tag];
@@ -952,10 +985,9 @@ enum GCDAsyncUdpSocketConfig
 {
 	LogTrace();
 	
-	if (delegateQueue && [delegate respondsToSelector:@selector(udpSocket:didNotSendDataWithTag:dueToError:)])
+	__strong id theDelegate = delegate;
+	if (delegateQueue && [theDelegate respondsToSelector:@selector(udpSocket:didNotSendDataWithTag:dueToError:)])
 	{
-		id theDelegate = delegate;
-		
 		dispatch_async(delegateQueue, ^{ @autoreleasepool {
 			
 			[theDelegate udpSocket:self didNotSendDataWithTag:tag dueToError:error];
@@ -969,10 +1001,9 @@ enum GCDAsyncUdpSocketConfig
 	
 	SEL selector = @selector(udpSocket:didReceiveData:fromAddress:withFilterContext:);
 	
-	if (delegateQueue && [delegate respondsToSelector:selector])
+	__strong id theDelegate = delegate;
+	if (delegateQueue && [theDelegate respondsToSelector:selector])
 	{
-		id theDelegate = delegate;
-		
 		dispatch_async(delegateQueue, ^{ @autoreleasepool {
 			
 			[theDelegate udpSocket:self didReceiveData:data fromAddress:address withFilterContext:context];
@@ -984,10 +1015,9 @@ enum GCDAsyncUdpSocketConfig
 {
 	LogTrace();
 	
-	if (delegateQueue && [delegate respondsToSelector:@selector(udpSocketDidClose:withError:)])
+	__strong id theDelegate = delegate;
+	if (delegateQueue && [theDelegate respondsToSelector:@selector(udpSocketDidClose:withError:)])
 	{
-		id theDelegate = delegate;
-		
 		dispatch_async(delegateQueue, ^{ @autoreleasepool {
 			
 			[theDelegate udpSocketDidClose:self withError:error];
@@ -1204,9 +1234,17 @@ enum GCDAsyncUdpSocketConfig
 					}
 					else if (res->ai_family == AF_INET6)
 					{
-						// Found IPv6 address
-						// Wrap the native address structure and add to list
-						
+
+                        // Fixes connection issues with IPv6, it is the same solution for udp socket.
+                        // https://github.com/robbiehanson/CocoaAsyncSocket/issues/429#issuecomment-222477158
+                        struct sockaddr_in6 *sockaddr = (struct sockaddr_in6 *)res->ai_addr;
+                        in_port_t *portPtr = &sockaddr->sin6_port;
+                        if ((portPtr != NULL) && (*portPtr == 0)) {
+                            *portPtr = htons(port);
+                        }
+
+                        // Found IPv6 address
+                        // Wrap the native address structure and add to list
 						[addresses addObject:[NSData dataWithBytes:res->ai_addr length:res->ai_addrlen]];
 					}
 				}
@@ -1982,6 +2020,39 @@ enum GCDAsyncUdpSocketConfig
 			close(socketFD);
 			return SOCKET_NULL;
 		}
+        
+        /**
+         * The theoretical maximum size of any IPv4 UDP packet is UINT16_MAX = 65535.
+         * The theoretical maximum size of any IPv6 UDP packet is UINT32_MAX = 4294967295.
+         *
+         * The default maximum size of the UDP buffer in iOS is 9216 bytes.
+         *
+         * This is the reason of #222(GCD does not necessarily return the size of an entire UDP packet) and
+         *  #535(GCDAsyncUDPSocket can not send data when data is greater than 9K)
+         *
+         *
+         * Enlarge the maximum size of UDP packet.
+         * I can not ensure the protocol type now so that the max size is set to 65535 :)
+         **/
+      
+        status = setsockopt(socketFD, SOL_SOCKET, SO_SNDBUF, (const char*)&maxSendSize, sizeof(int));
+        if (status == -1)
+        {
+            if (errPtr)
+                *errPtr = [self errnoErrorWithReason:@"Error setting send buffer size (setsockopt)"];
+            close(socketFD);
+            return SOCKET_NULL;
+        }
+        
+        status = setsockopt(socketFD, SOL_SOCKET, SO_RCVBUF, (const char*)&maxSendSize, sizeof(int));
+        if (status == -1)
+        {
+            if (errPtr)
+                *errPtr = [self errnoErrorWithReason:@"Error setting receive buffer size (setsockopt)"];
+            close(socketFD);
+            return SOCKET_NULL;
+        }
+
 		
 		return socketFD;
 	};
@@ -3454,6 +3525,70 @@ enum GCDAsyncUdpSocketConfig
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma mark Reuse port
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+- (BOOL)enableReusePort:(BOOL)flag error:(NSError **)errPtr
+{
+	__block BOOL result = NO;
+	__block NSError *err = nil;
+	
+	dispatch_block_t block = ^{ @autoreleasepool {
+		
+		if (![self preOp:&err])
+		{
+			return_from_block;
+		}
+		
+		if ((flags & kDidCreateSockets) == 0)
+		{
+			if (![self createSockets:&err])
+			{
+				return_from_block;
+			}
+		}
+		
+		int value = flag ? 1 : 0;
+		if (socket4FD != SOCKET_NULL)
+		{
+			int error = setsockopt(socket4FD, SOL_SOCKET, SO_REUSEPORT, (const void *)&value, sizeof(value));
+			
+			if (error)
+			{
+				err = [self errnoErrorWithReason:@"Error in setsockopt() function"];
+				
+				return_from_block;
+			}
+			result = YES;
+		}
+		
+		if (socket6FD != SOCKET_NULL)
+		{
+			int error = setsockopt(socket6FD, SOL_SOCKET, SO_REUSEPORT, (const void *)&value, sizeof(value));
+			
+			if (error)
+			{
+				err = [self errnoErrorWithReason:@"Error in setsockopt() function"];
+				
+				return_from_block;
+			}
+			result = YES;
+		}
+		
+	}};
+	
+	if (dispatch_get_specific(IsOnSocketQueueOrTargetQueueKey))
+		block();
+	else
+		dispatch_sync(socketQueue, block);
+	
+	if (errPtr)
+		*errPtr = err;
+	
+	return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark Broadcast
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -3525,6 +3660,8 @@ enum GCDAsyncUdpSocketConfig
 		LogWarn(@"Ignoring attempt to send nil/empty data.");
 		return;
 	}
+    
+    
 	
 	GCDAsyncUdpSendPacket *packet = [[GCDAsyncUdpSendPacket alloc] initWithData:data timeout:timeout tag:tag];
 	
@@ -4293,7 +4430,9 @@ enum GCDAsyncUdpSocketConfig
 		struct sockaddr_in sockaddr4;
 		socklen_t sockaddr4len = sizeof(sockaddr4);
 		
-		size_t bufSize = MIN(max4ReceiveSize, socket4FDBytesAvailable);
+		// #222: GCD does not necessarily return the size of an entire UDP packet 
+		// from dispatch_source_get_data(), so we must use the maximum packet size.
+		size_t bufSize = max4ReceiveSize;
 		void *buf = malloc(bufSize);
 		
 		result = recvfrom(socket4FD, buf, bufSize, 0, (struct sockaddr *)&sockaddr4, &sockaddr4len);
@@ -4328,7 +4467,9 @@ enum GCDAsyncUdpSocketConfig
 		struct sockaddr_in6 sockaddr6;
 		socklen_t sockaddr6len = sizeof(sockaddr6);
 		
-		size_t bufSize = MIN(max6ReceiveSize, socket6FDBytesAvailable);
+		// #222: GCD does not necessarily return the size of an entire UDP packet 
+		// from dispatch_source_get_data(), so we must use the maximum packet size.
+		size_t bufSize = max6ReceiveSize;
 		void *buf = malloc(bufSize);
 		
 		result = recvfrom(socket6FD, buf, bufSize, 0, (struct sockaddr *)&sockaddr6, &sockaddr6len);

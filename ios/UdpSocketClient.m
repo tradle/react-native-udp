@@ -78,7 +78,7 @@ NSString *const RCTUDPErrorDomain = @"RCTUDPErrorDomain";
   }
 }
 
-- (BOOL) bind:(u_int16_t)port address:(NSString *)address error:(NSError **) error
+- (BOOL)bind:(u_int16_t)port address:(NSString *)address options:(NSDictionary *)options error:(NSError **) error
 {
 
   if (_port) {
@@ -96,6 +96,9 @@ NSString *const RCTUDPErrorDomain = @"RCTUDPErrorDomain";
   
   [_udpSocket setMaxReceiveIPv4BufferSize:UINT16_MAX];
   [_udpSocket setMaxReceiveIPv6BufferSize:UINT16_MAX];
+
+  BOOL reusePort = options[@"reusePort"] ?: NO;
+  [_udpSocket enableReusePort:reusePort error:error];
   
   BOOL result;
   if (address) {
