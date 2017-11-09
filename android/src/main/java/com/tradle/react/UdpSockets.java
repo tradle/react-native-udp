@@ -11,6 +11,7 @@ import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.support.annotation.Nullable;
 import android.util.SparseArray;
+import android.os.AsyncTask;
 
 import com.facebook.common.logging.FLog;
 import com.facebook.react.bridge.Arguments;
@@ -72,7 +73,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                     }
                     mClients.clear();
                 }
-            }.execute().get();
+            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR).get();
         } catch (InterruptedException ioe) {
             FLog.e(TAG, "onCatalystInstanceDestroy", ioe);
         } catch (ExecutionException ee) {
@@ -118,7 +119,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                 UdpSocketClient.Builder builder = new UdpSocketClient.Builder(UdpSockets.this, UdpSockets.this);
                 mClients.put(cId, builder.build());
             }
-        }.execute();
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -132,7 +133,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
             protected void doInBackgroundGuarded(Void... params) {
                 UdpSocketClient client = findClient(cId, callback);
                 if (client == null) {
-                    return;
+                        return;
                 }
 
                 try {
@@ -154,7 +155,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                     callback.invoke(UdpErrorUtil.getError(null, ioe.getMessage()));
                 }
             }
-        }.execute();
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -200,7 +201,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                     FLog.e(TAG, "addMembership", ioe);
                 }
             }
-        }.execute();
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -227,7 +228,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                     }
                 }
             }
-        }.execute();
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -255,7 +256,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                     callback.invoke(UdpErrorUtil.getError(null, ioe.getMessage()));
                 }
             }
-        }.execute();
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -285,7 +286,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
 
                 mClients.remove(cId);
             }
-        }.execute();
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -308,7 +309,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                     callback.invoke(UdpErrorUtil.getError(null, e.getMessage()));
                 }
             }
-        }.execute();
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -342,7 +343,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                         .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                         .emit("udp-" + clientID + "-data", eventParams);
             }
-        }.execute();
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
