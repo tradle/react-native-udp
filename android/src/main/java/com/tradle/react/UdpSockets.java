@@ -172,6 +172,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
 
                 if (mMulticastLock == null) {
                     WifiManager wifiMgr = (WifiManager) getReactApplicationContext()
+                        .getApplicationContext()
                         .getSystemService(Context.WIFI_SERVICE);
                     mMulticastLock = wifiMgr.createMulticastLock("react-native-udp");
                     mMulticastLock.setReferenceCounted(true);
