@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   s.homepage            = package['homepage']
   s.license             = package['license']
   s.author              = {package['author']['name']=>package['author']['email']}
-  s.source              = { :git => package_json["repository"]["url"].gsub(/(http.*)/).first, :tag => "v#{s.version}" }
+  s.source              = { :git => package["repository"]["url"].gsub(/(http.*)/).first, :tag => "v#{s.version}" }
   s.platform            = :ios, "7.0"
   s.source_files        = "ios", "ios/**/*.{h,m}"
   s.exclude_files       = "Classes/Exclude"
