@@ -23,7 +23,7 @@ var Sockets = NativeModules.UdpSockets
 var base64 = require('base64-js')
 var ipRegex = require('ip-regex')
 // RFC 952 hostname format
-var hostnameRegex = /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$/;
+var hostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
 var noop = function () {}
 var instances = 0
 var STATE = {
