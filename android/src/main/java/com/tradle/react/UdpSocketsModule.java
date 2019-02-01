@@ -8,7 +8,6 @@
 package com.tradle.react;
 
 import com.facebook.react.ReactPackage;
-import com.facebook.react.bridge.JavaScriptModule;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ViewManager;
@@ -28,11 +27,6 @@ public final class UdpSocketsModule implements ReactPackage {
         modules.add(new UdpSockets(reactContext));
 
         return modules;
-    }
-
-    @Override
-    public List<Class<? extends JavaScriptModule>> createJSModules() {
-        return Collections.emptyList();
     }
 
     @Override
