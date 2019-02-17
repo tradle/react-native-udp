@@ -83,6 +83,11 @@ UdpSocket.prototype.bind = function(port, address, callback) {
     address = undefined
   }
 
+  if (typeof port === 'function') {
+    callback = port
+    port = undefined
+  }
+
   if (!address) address = '0.0.0.0'
 
   if (!port) port = 0
