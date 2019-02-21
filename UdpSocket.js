@@ -73,20 +73,12 @@ UdpSocket.prototype._debug = function() {
   }
 }
 
-UdpSocket.prototype.bind = function(port, address, callback) {
+UdpSocket.prototype.bind = function(...args) {
   var self = this
 
   if (this._state !== STATE.UNBOUND) throw new Error('Socket is already bound')
 
-  if (typeof address === 'function') {
-    callback = address
-    address = undefined
-  }
-
-  if (typeof port === 'function') {
-    callback = port
-    port = undefined
-  }
+  let { port, address, callback } = normalizeBindOptions(...args)
 
   if (!address) address = '0.0.0.0'
 
@@ -303,4 +295,19 @@ function normalizeError (err) {
 
     return err
   }
+}
+
+function normalizeBindOptions(...args) {
+  const options = typeof args[0] === 'object' ? args[0] : {}
+  if (typeof args[0] === 'number') {
+    options.port = args[0]
+  }
+  if (typeof args[1] === 'string') {
+    options.address = args[1]
+  }
+  if (typeof args[args.length - 1] === 'function') {
+    options.callback = args[args.length - 1]
+  }
+
+  return options
 }
