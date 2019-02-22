@@ -22,6 +22,7 @@ var {
 var Sockets = NativeModules.UdpSockets
 var base64 = require('base64-js')
 var ipRegex = require('ip-regex')
+var normalizeBindOptions = require('./normalizeBindOptions')
 // RFC 952 hostname format
 var hostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
 var noop = function () {}
@@ -295,19 +296,4 @@ function normalizeError (err) {
 
     return err
   }
-}
-
-function normalizeBindOptions(...args) {
-  const options = typeof args[0] === 'object' ? args[0] : {}
-  if (typeof args[0] === 'number') {
-    options.port = args[0]
-  }
-  if (typeof args[1] === 'string') {
-    options.address = args[1]
-  }
-  if (typeof args[args.length - 1] === 'function') {
-    options.callback = args[args.length - 1]
-  }
-
-  return options
 }
