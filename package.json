@@ -4,7 +4,8 @@
   "description": "node's dgram API for react-native",
   "main": "UdpSockets.js",
   "scripts": {
-    "start": "exit 1"
+    "start": "exit 1",
+    "test": "mocha"
   },
   "browser": {
     "dgram": "./UdpSockets.js"
@@ -38,5 +39,8 @@
     "inherits": "^2.0.1",
     "ip-regex": "^1.0.3",
     "util": "^0.10.3"
+  },
+  "devDependencies": {
+    "mocha": "^6.0.1"
   }
 }
