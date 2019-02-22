@@ -22,6 +22,7 @@ var {
 var Sockets = NativeModules.UdpSockets
 var base64 = require('base64-js')
 var ipRegex = require('ip-regex')
+var normalizeBindOptions = require('./normalizeBindOptions')
 // RFC 952 hostname format
 var hostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
 var noop = function () {}
@@ -73,15 +74,12 @@ UdpSocket.prototype._debug = function() {
   }
 }
 
-UdpSocket.prototype.bind = function(port, address, callback) {
+UdpSocket.prototype.bind = function(...args) {
   var self = this
 
   if (this._state !== STATE.UNBOUND) throw new Error('Socket is already bound')
 
-  if (typeof address === 'function') {
-    callback = address
-    address = undefined
-  }
+  let { port, address, callback } = normalizeBindOptions(...args)
 
   if (!address) address = '0.0.0.0'
 
