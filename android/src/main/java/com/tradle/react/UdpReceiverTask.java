@@ -23,7 +23,7 @@ import java.net.InetAddress;
  */
 public class UdpReceiverTask extends AsyncTask<Pair<DatagramSocket, UdpReceiverTask.OnDataReceivedListener>, Void, Void> {
     private static final String TAG = "UdpReceiverTask";
-    private static final int MAX_UDP_DATAGRAM_LEN = 1024;
+    private static final int MAX_UDP_DATAGRAM_LEN = 0xffff;
 
     /**
      * An infinite loop to block and read data from the socket.
