@@ -23,8 +23,8 @@ var Sockets = NativeModules.UdpSockets
 var base64 = require('base64-js')
 var ipRegex = require('ip-regex')
 var normalizeBindOptions = require('./normalizeBindOptions')
-// RFC 952 hostname format
-var hostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
+// RFC 952 hostname format, except for Huawei android devices that include '_' on their hostnames
+var hostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9_\-]*[A-Za-z0-9])$/;
 var noop = function () {}
 var instances = 0
 var STATE = {
