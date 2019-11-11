@@ -8,7 +8,7 @@
 package com.tradle.react;
 
 import android.os.AsyncTask;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.util.Base64;
 import android.util.Pair;
 
