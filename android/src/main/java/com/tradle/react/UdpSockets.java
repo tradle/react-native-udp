@@ -9,7 +9,7 @@ package com.tradle.react;
 
 import android.content.Context;
 import android.net.wifi.WifiManager;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.util.SparseArray;
 
 import com.facebook.common.logging.FLog;

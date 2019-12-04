@@ -1,19 +1,52 @@
 {
-  "name": "react-native-udp",
-  "version": "2.6.1",
-  "description": "node's dgram API for react-native",
-  "main": "UdpSockets.js",
-  "scripts": {
-    "start": "exit 1",
-    "test": "mocha"
+  "_from": "react-native-udp",
+  "_id": "react-native-udp@2.6.1",
+  "_inBundle": false,
+  "_integrity": "sha512-KctAXtfBjRe+rGLvms92C82MsrZUwUyODwGskY6mDPigMaDTmsKdNqLCXgWh0g6ZmB2UtOzFsbPphy36NyM3KA==",
+  "_location": "/react-native-udp",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "react-native-udp",
+    "name": "react-native-udp",
+    "escapedName": "react-native-udp",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/react-native-udp/-/react-native-udp-2.6.1.tgz",
+  "_shasum": "ce9f2479f8af6d1bb356cfee69c89cf92fdd50be",
+  "_spec": "react-native-udp",
+  "_where": "E:\\tasty-order",
+  "author": {
+    "name": "Mark Vayngrib",
+    "email": "mark.vayngrib@lablz.com"
   },
   "browser": {
     "dgram": "./UdpSockets.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/tradle/react-native-udp"
+  "bugs": {
+    "url": "https://github.com/tradle/react-native-udp/issues"
   },
+  "bundleDependencies": false,
+  "dependencies": {
+    "base64-js": "0.0.8",
+    "events": "^1.0.2",
+    "inherits": "^2.0.1",
+    "ip-regex": "^1.0.3",
+    "util": "^0.10.3"
+  },
+  "deprecated": false,
+  "description": "node's dgram API for react-native",
+  "devDependencies": {
+    "mocha": "^6.0.1"
+  },
+  "homepage": "https://github.com/tradle/react-native-udp",
   "keywords": [
     "react-component",
     "reactnative",
@@ -24,23 +57,16 @@
     "ios",
     "android"
   ],
-  "author": {
-    "name": "Mark Vayngrib",
-    "email": "mark.vayngrib@lablz.com"
-  },
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/tradle/react-native-udp/issues"
+  "main": "UdpSockets.js",
+  "name": "react-native-udp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tradle/react-native-udp.git"
   },
-  "homepage": "https://github.com/tradle/react-native-udp",
-  "dependencies": {
-    "base64-js": "0.0.8",
-    "events": "^1.0.2",
-    "inherits": "^2.0.1",
-    "ip-regex": "^1.0.3",
-    "util": "^0.10.3"
+  "scripts": {
+    "start": "exit 1",
+    "test": "mocha"
   },
-  "devDependencies": {
-    "mocha": "^6.0.1"
-  }
+  "version": "2.6.2"
 }
