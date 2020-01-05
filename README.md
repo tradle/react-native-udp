@@ -4,7 +4,14 @@ node's [dgram](https://nodejs.org/api/dgram.html) API in React Native
 
 This module is used by [Tradle](https://github.com/tradle)
 
-## Install
+## Compatibility
+
+| React Native Version | Use Version |
+|----------------------|-------------|
+| <=0.59.10            | <=2.5.0     |
+| >=0.60.0             | >=3.0.0     |
+
+## Installion
 
 * Create a new react-native project. [Check react-native getting started](http://facebook.github.io/react-native/docs/getting-started.html#content)
 
@@ -13,7 +20,16 @@ This module is used by [Tradle](https://github.com/tradle)
 npm install --save react-native-udp
 ```
 
-## Link in the native dependency
+### Link in the native dependency
+
+For versions >= 3.0.0:
+
+```
+cd ios
+pod install
+```
+
+For versions <=2.5.0:
 
 ```
 react-native link react-native-udp
@@ -21,7 +37,7 @@ react-native link react-native-udp
 rnpm link react-native-udp
 ```
 
-### `Android`
+### Android (only for versions <=2.5.0)
 
 * Register and load the Native Module in your Main application
 ([import](examples/rctsockets/android/app/src/main/java/com/rctsockets/MainApplication.java#L11), [getPackages](examples/rctsockets/android/app/src/main/java/com/rctsockets/MainApplication.java#L28))
