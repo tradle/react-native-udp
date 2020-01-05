@@ -17,7 +17,7 @@ const Buffer = (global.Buffer = global.Buffer || require('buffer').Buffer);
 const { DeviceEventEmitter, NativeModules, Platform } = require('react-native');
 const Sockets = NativeModules.UdpSockets;
 const ipRegex = require('ip-regex');
-const normalizeBindOptions = require('./normalizeBindOptions').default;
+const normalizeBindOptions = require('./normalizeBindOptions');
 // RFC 952 hostname format, except for Huawei android devices that include '_' on their hostnames
 const hostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9_-]*[A-Za-z0-9])$/;
 const noop = function() {};
@@ -28,9 +28,7 @@ const STATE = {
     BOUND: 2,
 };
 
-module.exports = UdpSocket;
-
-class UdpSocket extends EventEmitter {
+export default class UdpSocket extends EventEmitter {
     constructor(options, onmessage) {
         super(options);
         EventEmitter.call(this);
@@ -60,7 +58,7 @@ class UdpSocket extends EventEmitter {
         if (__DEV__) {
             const args = [].slice.call(arguments);
             args.unshift(`socket-${this._id}`);
-            console.log.apply(console, args);
+            console.log(...args);
         }
     }
 
@@ -71,8 +69,10 @@ class UdpSocket extends EventEmitter {
         if (!address) address = '0.0.0.0';
         if (!port) port = 0;
         if (!callback) callback = () => {};
+
         this.once('listening', callback.bind(this));
         this._state = STATE.BINDING;
+
         this._debug('binding, address:', address, 'port:', port);
         const bindArgs = [this._id, port, address];
         if (Platform.OS === 'ios') bindArgs.push({ reusePort: this.reusePort });
@@ -145,7 +145,6 @@ class UdpSocket extends EventEmitter {
      * @param {function} callback Callback when message is done being delivered.
      *                            Optional.
      */
-    // UdpSocket.prototype.send = function (buf, host, port, cb) {
     send(buffer, offset, length, port, address, callback) {
         const self = this;
         if (typeof port !== 'number') throw new Error('invalid port');
@@ -155,7 +154,7 @@ class UdpSocket extends EventEmitter {
             const args = [].slice.call(arguments);
             return this.bind(0, function(err) {
                 if (err) return callback(err);
-                self.send.apply(self, args);
+                self.send(self, args);
             });
         } else if (this._state === STATE.BINDING) {
             // we're ok, GCDAsync(Udp)Socket handles queueing internally
@@ -225,14 +224,17 @@ class UdpSocket extends EventEmitter {
 
         Sockets.addMembership(this._id, multicastAddress);
     }
+
     dropMembership(multicastAddress) {
         if (this._state !== STATE.BOUND) throw new Error('you must bind before addMembership()');
 
         Sockets.dropMembership(this._id, multicastAddress);
     }
+
     ref() {
         // anything?
     }
+
     unref() {
         // anything?
     }
