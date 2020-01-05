@@ -5,7 +5,8 @@
   "main": "UdpSockets.js",
   "scripts": {
     "start": "exit 1",
-    "test": "mocha"
+    "test": "mocha",
+    "lint": "eslint ."
   },
   "browser": {
     "dgram": "./UdpSockets.js"
@@ -33,14 +34,19 @@
     "url": "https://github.com/tradle/react-native-udp/issues"
   },
   "homepage": "https://github.com/tradle/react-native-udp",
+  "peerDependencies": {},
   "dependencies": {
-    "base64-js": "0.0.8",
+    "buffer": "^5.4.3",
     "events": "^1.0.2",
-    "inherits": "^2.0.1",
-    "ip-regex": "^1.0.3",
-    "util": "^0.10.3"
+    "ip-regex": "^1.0.3"
   },
   "devDependencies": {
-    "mocha": "^6.0.1"
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.9.0",
+    "eslint-plugin-mocha": "^6.2.2",
+    "eslint-plugin-prettier": "^3.1.2",
+    "mocha": "^6.0.1",
+    "prettier": "^1.19.1",
+    "react-native": "^0.61.5"
   }
 }

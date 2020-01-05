@@ -1,0 +1,30 @@
+{
+    "plugins": ["prettier", "mocha"],
+    "env": {
+        "es6": true,
+        "node": true,
+        "mocha": true
+    },
+    "parserOptions": {
+        "ecmaVersion": 2018,
+        "sourceType": "module"
+    },
+    "extends": ["eslint:recommended", "prettier", "plugin:mocha/recommended"],
+    "rules": {
+        "prefer-const": [
+            "error",
+            {
+                "destructuring": "any",
+                "ignoreReadBeforeAssign": false
+            }
+        ],
+        "curly": ["error", "multi", "consistent"],
+        "no-var": "error",
+        "prefer-template": 2,
+        "require-atomic-updates": "off",
+        "prettier/prettier": ["error"]
+    },
+    "globals": {
+        "__DEV__": true
+    }
+}

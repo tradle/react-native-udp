@@ -96,16 +96,8 @@ socket.once('listening', function() {
 })
 
 socket.on('message', function(msg, rinfo) {
-  console.log('message was received', msg)
+  console.log('message was received', msg) // msg is a Buffer object
 })
-```
-
-### Note
-
-If you want to send and receive node Buffer objects, you'll have to "npm install buffer" and set it as a global for UdpSockets to pick it up:
-
-```js
-global.Buffer = global.Buffer || require('buffer').Buffer
 ```
 
 ### TODO
