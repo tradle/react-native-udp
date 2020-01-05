@@ -7,8 +7,8 @@ This module is used by [Tradle](https://github.com/tradle)
 ## Compatibility
 
 | React Native Version | Use Version |
-|----------------------|-------------|
-| <=0.59.10            | <=2.5.0     |
+| -------------------- | ----------- |
+| <=0.59.10            | <=2.7.0     |
 | >=0.60.0             | >=3.0.0     |
 
 ## Installion
@@ -29,7 +29,7 @@ cd ios
 pod install
 ```
 
-For versions <=2.5.0:
+For versions <=2.7.0:
 
 ```
 react-native link react-native-udp
@@ -37,7 +37,7 @@ react-native link react-native-udp
 rnpm link react-native-udp
 ```
 
-### Android (only for versions <=2.5.0)
+### Android (only for versions <=2.7.0)
 
 * Register and load the Native Module in your Main application
 ([import](examples/rctsockets/android/app/src/main/java/com/rctsockets/MainApplication.java#L11), [getPackages](examples/rctsockets/android/app/src/main/java/com/rctsockets/MainApplication.java#L28))
