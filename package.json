@@ -5,7 +5,8 @@
   "main": "UdpSockets.js",
   "scripts": {
     "start": "exit 1",
-    "test": "mocha"
+    "test": "mocha",
+    "lint": "eslint ."
   },
   "browser": {
     "dgram": "./UdpSockets.js"
@@ -41,6 +42,12 @@
     "util": "^0.10.3"
   },
   "devDependencies": {
-    "mocha": "^6.0.1"
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.9.0",
+    "eslint-plugin-mocha": "^6.2.2",
+    "eslint-plugin-prettier": "^3.1.2",
+    "mocha": "^6.0.1",
+    "prettier": "^1.19.1",
+    "react-native": "^0.61.5"
   }
 }
