@@ -1,4 +1,4 @@
-module.exports = function normalizeBindOptions(...args) {
+export default function normalizeBindOptions(...args) {
   const [arg1, arg2] = args
   const lastArg = args[args.length - 1]
   let options = {}
