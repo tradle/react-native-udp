@@ -1,16 +1,16 @@
 {
     "parser": "babel-eslint",
-    "plugins": ["prettier", "mocha"],
+    "plugins": ["prettier", "jest"],
     "env": {
         "es6": true,
         "node": true,
-        "mocha": true
+        "jest/globals": true
     },
     "parserOptions": {
         "ecmaVersion": 2018,
         "sourceType": "module"
     },
-    "extends": ["eslint:recommended", "prettier", "plugin:mocha/recommended"],
+    "extends": ["eslint:recommended", "prettier", "plugin:jest/recommended"],
     "rules": {
         "prefer-const": [
             "error",
