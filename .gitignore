@@ -23,6 +23,9 @@ project.xcworkspace
 
 # Xcode, Gradle
 build/
+android/gradle/wrapper
+android/gradlew
+android/gradlew.bat
 
 # Android
 .idea
