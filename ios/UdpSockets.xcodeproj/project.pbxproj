@@ -11,7 +11,6 @@
 		7350006B1AFF9AB600ED3C82 /* UdpSocketClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 7350006A1AFF9AB600ED3C82 /* UdpSocketClient.m */; };
 		73D9377D1AFF9EBE00450142 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 73D9377C1AFF9EBE00450142 /* CFNetwork.framework */; };
 		73D9377F1AFF9F6E00450142 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 73D9377E1AFF9F6E00450142 /* UIKit.framework */; };
-		73D937AA1AFFA5D100450142 /* GCDAsyncUdpSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 73D937A81AFFA5C900450142 /* GCDAsyncUdpSocket.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -34,8 +33,6 @@
 		7350006A1AFF9AB600ED3C82 /* UdpSocketClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UdpSocketClient.m; sourceTree = "<group>"; };
 		73D9377C1AFF9EBE00450142 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		73D9377E1AFF9F6E00450142 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
-		73D937A71AFFA5C900450142 /* GCDAsyncUdpSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GCDAsyncUdpSocket.h; path = CocoaAsyncSocket/GCDAsyncUdpSocket.h; sourceTree = "<group>"; };
-		73D937A81AFFA5C900450142 /* GCDAsyncUdpSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GCDAsyncUdpSocket.m; path = CocoaAsyncSocket/GCDAsyncUdpSocket.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,8 +65,6 @@
 				7350006A1AFF9AB600ED3C82 /* UdpSocketClient.m */,
 				13BE3DEC1AC21097009241FE /* UdpSockets.h */,
 				13BE3DED1AC21097009241FE /* UdpSockets.m */,
-				73D937A71AFFA5C900450142 /* GCDAsyncUdpSocket.h */,
-				73D937A81AFFA5C900450142 /* GCDAsyncUdpSocket.m */,
 				134814211AA4EA7D00B7C361 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -113,6 +108,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 58B511D21A9E6C8500147676;
@@ -130,7 +126,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				73D937AA1AFFA5D100450142 /* GCDAsyncUdpSocket.m in Sources */,
 				7350006B1AFF9AB600ED3C82 /* UdpSocketClient.m in Sources */,
 				13BE3DEE1AC21097009241FE /* UdpSockets.m in Sources */,
 			);
