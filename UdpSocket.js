@@ -40,6 +40,7 @@ function UdpSocket(options, onmessage) {
 
   this.type = options.type
   this.reusePort = options && options.reusePort
+  this.debugEnabled = options && options.debug
   this._ipv = Number(this.type.slice(3))
   this._ipRegex = ipRegex[`v${this._ipv}`]({ exact: true })
   this._id = instances++
@@ -62,7 +63,7 @@ function UdpSocket(options, onmessage) {
 inherits(UdpSocket, EventEmitter)
 
 UdpSocket.prototype._debug = function() {
-  if (__DEV__) {
+  if (__DEV__ || this.debugEnabled) {
     const args = [].slice.call(arguments)
     args.unshift(`socket-${this._id}`)
     console.log.apply(console, args)

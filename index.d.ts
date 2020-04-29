@@ -30,6 +30,7 @@ declare module 'react-native-udp' {
       recvBufferSize?: number;
       sendBufferSize?: number;
       lookup?: (hostname: string, options: dns.LookupOneOptions, callback: (err: NodeJS.ErrnoException | null, address: string, family: number) => void) => void;
+      debug?: boolean;
   }
 
   function createSocket(type: SocketType, callback?: (msg: Buffer, rinfo: RemoteInfo) => void): Socket;

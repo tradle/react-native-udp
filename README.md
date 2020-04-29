@@ -100,6 +100,17 @@ socket.on('message', function(msg, rinfo) {
 })
 ```
 
+### Debugging
+
+To see the events emitted from the native modules, supply the debug option when creating the socket:
+
+```js
+const socket = dgram.createSocket({
+  type: 'udp4',
+  debug: true,
+});
+```
+
 ### Note
 
 If you want to send and receive node Buffer objects, you'll have to "npm install buffer" and set it as a global for UdpSockets to pick it up:
@@ -114,10 +125,10 @@ add select tests from node's tests for dgram
 
 ## Contributors
 
-[Mark Vayngrib](https://github.com/mvayngrib)  
-[Ellen Katsnelson](https://github.com/pgmemk)  
+[Mark Vayngrib](https://github.com/mvayngrib)
+[Ellen Katsnelson](https://github.com/pgmemk)
 [Tradle, Inc.](https://github.com/tradle/about/wiki)
 
-[Andy Prock](https://github.com/aprock)  
+[Andy Prock](https://github.com/aprock)
 
 PR's welcome!
