@@ -102,24 +102,19 @@ public final class UdpSockets extends ReactContextBaseJavaModule
      */
     @ReactMethod
     public void createSocket(final Integer cId, final ReadableMap options) {
-        new GuardedAsyncTask<Void, Void>(getReactApplicationContext()) {
-            @Override
-            protected void doInBackgroundGuarded(Void... params) {
-                if (cId == null) {
-                    FLog.e(TAG, "createSocket called with nil id parameter.");
-                    return;
-                }
+        if (cId == null) {
+            FLog.e(TAG, "createSocket called with nil id parameter.");
+            return;
+        }
 
-                UdpSocketClient client = mClients.get(cId);
-                if (client != null) {
-                    FLog.e(TAG, "createSocket called twice with the same id.");
-                    return;
-                }
+        UdpSocketClient client = mClients.get(cId);
+        if (client != null) {
+            FLog.e(TAG, "createSocket called twice with the same id.");
+            return;
+        }
 
-                UdpSocketClient.Builder builder = new UdpSocketClient.Builder(UdpSockets.this, UdpSockets.this);
-                mClients.put(cId, builder.build());
-            }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        UdpSocketClient.Builder builder = new UdpSocketClient.Builder(UdpSockets.this, UdpSockets.this);
+        mClients.put(cId, builder.build());
     }
 
     /**
