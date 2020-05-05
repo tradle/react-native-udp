@@ -33,8 +33,9 @@ export default class UdpSocket extends EventEmitter {
     super()
     EventEmitter.call(this)
     if (typeof options === 'string') options = { type: options }
-    if (options.type !== 'udp4' && options.type !== 'udp6')
+    if (options.type !== 'udp4' && options.type !== 'udp6') {
       throw new Error('invalid udp socket type')
+    }
     this.type = options.type
     this.reusePort = options && options.reusePort
     this._ipv = Number(this.type.slice(3))
