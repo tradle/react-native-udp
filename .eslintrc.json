@@ -1,15 +1,16 @@
 {
-    "plugins": ["prettier", "mocha"],
+    "parser": "babel-eslint",
+    "plugins": ["prettier", "jest"],
     "env": {
         "es6": true,
         "node": true,
-        "mocha": true
+        "jest/globals": true
     },
     "parserOptions": {
         "ecmaVersion": 2018,
         "sourceType": "module"
     },
-    "extends": ["eslint:recommended", "prettier", "plugin:mocha/recommended"],
+    "extends": ["eslint:recommended", "prettier", "plugin:jest/recommended"],
     "rules": {
         "prefer-const": [
             "error",
@@ -18,7 +19,7 @@
                 "ignoreReadBeforeAssign": false
             }
         ],
-        "curly": ["error", "multi", "consistent"],
+        "curly": ["error", "multi-line", "consistent"],
         "no-var": "error",
         "prefer-template": 2,
         "require-atomic-updates": "off",

@@ -3,11 +3,13 @@
  * @flow
  */
 
-const UdpSocket = require('./UdpSocket')
+import UdpSocket from './UdpSocket'
 
-exports.createSocket = function(options) {
-  if (typeof options === 'string') options = { type: options }
-  return new UdpSocket(options)
+export default class UdpSockets {
+  static createSocket(options) {
+    if (typeof options === 'string') options = { type: options }
+    return new UdpSocket(options)
+  }
+
+  static Socket = UdpSocket
 }
-
-exports.Socket = UdpSocket

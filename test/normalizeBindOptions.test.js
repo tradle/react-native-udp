@@ -1,6 +1,4 @@
-const assert = require('assert')
-const normalizeBindOptions = require('../normalizeBindOptions')
-const prettify = (obj) => JSON.stringify(obj, null, 2)
+import normalizeBindOptions from '../normalizeBindOptions'
 
 describe('normalizeBindOptions', function() {
   it('should support all combinations of arguments for [port], [address], [callback]', function() {
@@ -19,15 +17,7 @@ describe('normalizeBindOptions', function() {
       const usedArgsValues = usedArgs.map((arg) => arg.value)
 
       const result = normalizeBindOptions(...usedArgsValues)
-      try {
-        assert.deepEqual(result, expected)
-      } catch (err) {
-        throw new Error(
-          `for args: ${prettify(usedArgsValues)}\nexpected: ${prettify(expected)}\ngot ${prettify(
-            result
-          )}`
-        )
-      }
+      expect(result).toStrictEqual(expected)
     }
   })
 
@@ -40,15 +30,8 @@ describe('normalizeBindOptions', function() {
     ]
 
     for (const [args, expected] of inOut) {
-      let result
-      try {
-        result = normalizeBindOptions(...args)
-        assert.deepEqual(result, expected)
-      } catch (err) {
-        throw new Error(
-          `for args: ${prettify(args)}\nexpected: ${prettify(expected)}\ngot ${prettify(result)}`
-        )
-      }
+      const result = normalizeBindOptions(...args)
+      expect(result).toStrictEqual(expected)
     }
   })
 })
