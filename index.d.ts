@@ -48,8 +48,6 @@ declare module 'react-native-udp' {
       connect(port: number, callback: () => void): void;
       disconnect(): void;
       dropMembership(multicastAddress: string, multicastInterface?: string): void;
-      getRecvBufferSize(): number;
-      getSendBufferSize(): number;
       ref(): this;
       remoteAddress(): AddressInfo;
       send(msg: string | Uint8Array | any[], port?: number, address?: string, callback?: (error: Error | null, bytes: number) => void): void;
