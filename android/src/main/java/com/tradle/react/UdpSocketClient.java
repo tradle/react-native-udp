@@ -80,12 +80,15 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
             socketAddress = new InetSocketAddress(port);
         }
 
-        mSocket.setReuseAddress(mReuseAddress);
-        mSocket.bind(socketAddress);
+        try {
+            mSocket.setReuseAddress(mReuseAddress);
+            mSocket.bind(socketAddress);
 
-        // begin listening for data in the background
-        mReceiverTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
-                new Pair<DatagramSocket, UdpReceiverTask.OnDataReceivedListener>(mSocket, this));
+            // begin listening for data in the background
+            mReceiverTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                    new Pair<DatagramSocket, UdpReceiverTask.OnDataReceivedListener>(mSocket, this));
+        } catch (Exception e) {
+        }
     }
 
     /**
