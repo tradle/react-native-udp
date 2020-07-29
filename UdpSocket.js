@@ -17,6 +17,7 @@ import { DeviceEventEmitter, NativeModules, Platform } from 'react-native'
 const Sockets = NativeModules.UdpSockets
 import { toByteArray, fromByteArray } from 'base64-js'
 import ipRegex from 'ip-regex'
+import Buffer from 'buffer'
 import normalizeBindOptions from './normalizeBindOptions'
 // RFC 952 hostname format, except for Huawei android devices that include '_' on their hostnames
 const hostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9_-]*[A-Za-z0-9])$/
