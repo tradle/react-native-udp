@@ -1,89 +1,94 @@
-# UDP in React Native
+# react-native-udp
 
-node's [dgram](https://nodejs.org/api/dgram.html) API in React Native
+React Native UDP socket API for Android & iOS. It allows you to create UDP sockets, imitating some of Node's [dgram](https://nodejs.org/api/dgram.html) API functionalities (check the available API for more information).
 
-This module is used by [Tradle](https://github.com/tradle)
+_This module is used by [Tradle](https://github.com/tradle)._
 
-## Compatibility
+### Note
+
+If you want to send and receive node Buffer objects, you'll have to "npm install buffer" and set it as a global for UdpSockets to pick it up:
+
+```js
+global.Buffer = global.Buffer || require('buffer').Buffer
+```
+
+## Table of Contents
+
+- [Getting started](#getting-started)
+- [Compatibility](#react-native-compatibility)
+- [Usage](#usage)
+- [Maintainers](#maintainers)
+- [License](#license)
+
+## Getting started
+
+Install the library using either Yarn:
+
+```
+yarn add react-native-udp
+```
+
+or npm:
+
+```
+npm install --save react-native-udp
+```
+
+#### Using React Native >= 0.60
+
+Linking the package manually is not required anymore with [Autolinking](https://github.com/react-native-community/cli/blob/master/docs/autolinking.md).
+
+- **iOS Platform:**
+
+  `$ cd ios && pod install && cd ..` # CocoaPods on iOS needs this extra step
+
+#### Using React Native < 0.60
+
+You then need to link the native parts of the library for the platforms you are using. The easiest way to link the library is using the CLI tool by running this command from the root of your project:
+
+`$ react-native link react-native-udp`
+
+If you can't or don't want to use the CLI tool, you can also manually link the library using the instructions below (click on the arrow to show them):
+
+<details>
+<summary>Manually link the library on iOS</summary>
+
+1. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
+2. Go to `node_modules` ➜ `react-native-udp` and add `UdpSockets.xcodeproj`
+3. In XCode, in the project navigator, select your project. Add `libUdpSockets.a` to your project's `Build Phases` ➜ `Link Binary With Libraries`
+4. Run your project (`Cmd+R`)<
+   </details>
+
+<details>
+<summary>Manually link the library on Android</summary>
+
+1. Open up `android/app/src/main/java/[...]/MainApplication.java`
+
+- Add `import com.tradle.react.UdpSocketsModule;` to the imports at the top of the file
+- Add `new UdpSocketsModule()` to the list returned by the `getPackages()` method
+
+2. Append the following lines to `android/settings.gradle`:
+   ```
+   include ':react-native-udp'
+   project(':react-native-udp').projectDir = new File(rootProject.projectDir, 	'../node_modules/react-native-udp/android')
+   ```
+3. Insert the following lines inside the dependencies block in `android/app/build.gradle`:
+   `compile project(':react-native-udp')`
+   </details>
+
+## React Native Compatibility
 
 | React Native Version | Use Version |
 | -------------------- | ----------- |
 | <=0.59.10            | <=2.7.0     |
 | >=0.60.0             | >=3.0.0     |
 
-## Installion
-
-* Create a new react-native project. [Check react-native getting started](http://facebook.github.io/react-native/docs/getting-started.html#content)
-
-* In your project dir:
-```
-npm install --save react-native-udp
-```
-
-### Link in the native dependency
-
-For versions >= 3.0.0:
-
-```
-cd ios
-pod install
-```
-
-For versions <=2.7.0:
-
-```
-react-native link react-native-udp
-# OR, if you're using react-native older than 0.31:
-rnpm link react-native-udp
-```
-
-### Android (only for versions <=2.7.0)
-
-* Register and load the Native Module in your Main application
-([import](examples/rctsockets/android/app/src/main/java/com/rctsockets/MainApplication.java#L11), [getPackages](examples/rctsockets/android/app/src/main/java/com/rctsockets/MainApplication.java#L28))
-  * __Note:__ prior to react-native 0.29.2, this should happen in your Main Activity
-
-```java
-...
-
-import com.tradle.react.UdpSocketsModule;			// <--- import //
-
-public class MainApplication extends Application implements ReactApplication {
-	...
-	@Override
-	protected List<ReactPackage> getPackages() {
-		return Arrays.<ReactPackage>asList(
-			new MainReactPackage(),
-			new UdpSocketsModule()				// <- add here //
-		);
-	}
-}
-```
-
-Buckle up, Dorothy
-
 ## Usage
 
-### package.json
-
-_only if you want to write require('dgram') in your javascript_
-
-```json
-{
-  "browser": {
-    "dgram": "react-native-udp"
-  }
-}
-```
-
-### JS
-
-_see/run [index.js](examples/rctsockets) for a complete example, but basically it's just like dgram_
+_see/run [index.js](examples/udpsockets) for a complete example, but basically it's just like dgram_
 
 ```js
-var dgram = require('dgram')
-// OR, if not shimming via package.json "browser" field:
-// var dgram = require('react-native-udp')
+import dgram from 'react-native-udp'
 var socket = dgram.createSocket('udp4')
 socket.bind(12345)
 socket.once('listening', function() {
@@ -108,27 +113,14 @@ To see the events emitted from the native modules, supply the debug option when 
 const socket = dgram.createSocket({
   type: 'udp4',
   debug: true,
-});
+})
 ```
 
-### Note
+## Mantainers
 
-If you want to send and receive node Buffer objects, you'll have to "npm install buffer" and set it as a global for UdpSockets to pick it up:
+- [Rapsssito](https://github.com/rapsssito)
+- [Mark Vayngrib](https://github.com/mvayngrib)
 
-```js
-global.Buffer = global.Buffer || require('buffer').Buffer
-```
+## License
 
-### TODO
-
-add select tests from node's tests for dgram
-
-## Contributors
-
-[Mark Vayngrib](https://github.com/mvayngrib)
-[Ellen Katsnelson](https://github.com/pgmemk)
-[Tradle, Inc.](https://github.com/tradle/about/wiki)
-
-[Andy Prock](https://github.com/aprock)
-
-PR's welcome!
+The library is released under the MIT license. For more information see [`LICENSE`](/LICENSE).
