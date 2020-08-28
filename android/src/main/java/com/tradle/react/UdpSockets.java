@@ -121,7 +121,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
      * Binds to a given port and address, and begins listening for data.
      */
     @ReactMethod
-    public void bind(final Integer cId, final Integer port, final @Nullable String address,
+    public void bind(final Integer cId, final Integer port, final @Nullable String address, final @Nullable ReadableMap options,
                      final Callback callback) {
         new GuardedAsyncTask<Void, Void>(getReactApplicationContext()) {
             @Override

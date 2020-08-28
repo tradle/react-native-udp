@@ -1,9 +1,8 @@
 import { EventEmitter } from 'events'
-import { DeviceEventEmitter, NativeModules, Platform } from 'react-native'
+import { DeviceEventEmitter, NativeModules } from 'react-native'
 const Sockets = NativeModules.UdpSockets
 import { toByteArray, fromByteArray } from 'base64-js'
-// @ts-ignore
-import ipRegex from 'ip-regex'
+const ipRegex = require('ip-regex')
 import normalizeBindOptions from './normalizeBindOptions'
 // RFC 952 hostname format, except for Huawei android devices that include '_' on their hostnames
 const hostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9_-]*[A-Za-z0-9])$/
@@ -29,8 +28,11 @@ export default class UdpSocket extends EventEmitter {
     this.type = options.type
     this.reusePort = options && options.reusePort
     this.debugEnabled = options && options.debug
-    this._ipv = Number(this.type.slice(3))
-    this._ipRegex = ipRegex[`v${this._ipv}`]({ exact: true })
+    if (this.type === 'udp4') {
+      this._ipRegex = ipRegex['v4']({ exact: true })
+    } else {
+      this._ipRegex = ipRegex['v6']({ exact: true })
+    }
     this._id = instances++
     this._state = STATE.UNBOUND
     this._address = ''
@@ -55,7 +57,7 @@ export default class UdpSocket extends EventEmitter {
   }
 
   /**
-   * @param {number[]} args
+   * @param {any[]} args
    */
   bind(...args) {
     const self = this
@@ -67,11 +69,11 @@ export default class UdpSocket extends EventEmitter {
     this.once('listening', callback.bind(this))
     this._state = STATE.BINDING
     this._debug('binding, address:', address, 'port:', port)
-    const bindArgs = [this._id, port, address]
-    // @ts-ignore
-    if (Platform.OS === 'ios') bindArgs.push({ reusePort: this.reusePort })
     Sockets.bind(
-      ...bindArgs,
+      this._id,
+      port,
+      address,
+      { reusePort: this.reusePort },
       /**
        * @param {any} err
        * @param {{ address: any; port: any; }} addr
@@ -161,9 +163,7 @@ export default class UdpSocket extends EventEmitter {
     if (this._state === STATE.UNBOUND) {
       /** @type {string | any[] | DataView} */
       const args = [].slice.call(arguments)
-      // @ts-ignore
-      return this.bind(0, function(err) {
-        // @ts-ignore
+      return this.bind(0, (/** @type {string} */ err) => {
         if (err) return callback(err)
         self.send(args)
       })

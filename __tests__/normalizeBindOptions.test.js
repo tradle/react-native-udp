@@ -13,6 +13,7 @@ describe('normalizeBindOptions', function() {
     for (let i = 0, numCombinations = Math.pow(2, args.length); i < numCombinations; i++) {
       const usedArgs = args.filter((arg, bit) => (i + 1) & (1 << bit))
       const expected = {}
+      // @ts-ignore
       usedArgs.forEach((arg) => (expected[arg.name] = arg.value))
       const usedArgsValues = usedArgs.map((arg) => arg.value)
 
@@ -30,6 +31,7 @@ describe('normalizeBindOptions', function() {
     ]
 
     for (const [args, expected] of inOut) {
+      // @ts-ignore
       const result = normalizeBindOptions(...args)
       expect(result).toStrictEqual(expected)
     }
