@@ -1,4 +1,4 @@
-import normalizeBindOptions from '../normalizeBindOptions'
+import normalizeBindOptions from '../src/normalizeBindOptions'
 
 describe('normalizeBindOptions', function() {
   it('should support all combinations of arguments for [port], [address], [callback]', function() {
