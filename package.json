@@ -35,7 +35,7 @@
     "dgram",
     "udp",
     "sockets",
-    "iOs",
+    "iOS",
     "Android"
   ],
   "author": {
