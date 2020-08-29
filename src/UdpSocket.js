@@ -4,8 +4,6 @@ const Sockets = NativeModules.UdpSockets
 import { toByteArray, fromByteArray } from 'base64-js'
 const ipRegex = require('ip-regex')
 import normalizeBindOptions from './normalizeBindOptions'
-// RFC 952 hostname format, except for Huawei android devices that include '_' on their hostnames
-const hostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9_-]*[A-Za-z0-9])$/
 let instances = 0
 const STATE = {
   UNBOUND: 0,
@@ -47,6 +45,9 @@ export default class UdpSocket extends EventEmitter {
     }) // later
   }
 
+  /**
+   * @private
+   */
   _debug() {
     if (__DEV__ || this.debugEnabled) {
       /** @type {string[]} */
@@ -57,6 +58,18 @@ export default class UdpSocket extends EventEmitter {
   }
 
   /**
+   * For UDP sockets, causes the `UdpSocket` to listen for datagram messages on a named `port`
+   * and optional `address`. If `port` is not specified or is `0`, the operating system will
+   * attempt to bind to a random port. If `address` is not specified, the operating system
+   * will attempt to listen on all addresses. Once binding is complete, a `'listening'` event
+   * is emitted and the optional `callback` function is called.
+   *
+   * Specifying both a `'listening'` event listener and passing a callback to the `socket.bind()`
+   * method is not harmful but not very useful.
+   *
+   * If binding fails, an `'error'` event is generated. In rare case (e.g. attempting to bind
+   * with a closed socket), an `Error` may be thrown.
+   *
    * @param {any[]} args
    */
   bind(...args) {
@@ -97,6 +110,12 @@ export default class UdpSocket extends EventEmitter {
     )
   }
 
+  /**
+   * Close the underlying socket and stop listening for data on it. If a callback is provided,
+   * it is added as a listener for the `'close'` event.
+   *
+   * @param {(...args: any[]) => void} callback
+   */
   close(callback = () => {}) {
     if (this._destroyed) return setImmediate(callback)
     this.once('close', callback)
@@ -119,6 +138,29 @@ export default class UdpSocket extends EventEmitter {
   }
 
   /**
+   * NOT IMPLEMENTED
+   *
+   * @deprecated
+   * @param {number} port
+   * @param {string} address
+   * @param {(...args: any[]) => void} callback
+   */
+  // eslint-disable-next-line no-unused-vars
+  connect(port, address, callback) {
+    console.warn('react-native-udp: connect() is not implemented')
+  }
+
+  /**
+   * NOT IMPLEMENTED
+   *
+   * @deprecated
+   */
+  disconnect() {
+    console.warn('react-native-udp: disconnect() is not implemented')
+  }
+
+  /**
+   * @private
    * @param {{ data: string; address: string; port: number; }} info
    */
   _onReceive(info) {
@@ -135,40 +177,63 @@ export default class UdpSocket extends EventEmitter {
   }
 
   /**
-   * socket.send(buf, offset, length, port, address, [callback])
+   * Broadcasts a datagram on the socket. For connectionless sockets, the
+   * destination `port` and `address` must be specified. Connected sockets,
+   * on the other hand, will use their associated remote endpoint,
+   * so the `port` and `address` arguments must not be set.
    *
-   * For UDP sockets, the destination port and IP address must be
-   * specified. A string may be supplied for the address parameter, and it will
-   * be resolved with DNS. An optional callback may be specified to detect any
-   * DNS errors and when buf may be re-used. Note that DNS lookups will delay
-   * the time that a send takes place, at least until the next tick. The only
-   * way to know for sure that a send has taken place is to use the callback.
+   * The `msg` argument contains the message to be sent. Depending on its type,
+   * different behavior can apply. If `msg` is a Buffer, any `TypedArray` or a `DataView`,
+   * the `offset` and `length` specify the offset within the `Buffer` where the message
+   * begins and the number of bytes in the message, respectively. If `msg` is a
+   * `string`, then it is automatically converted to a `Buffer` with `'utf8'` encoding.
+   * With messages that contain multi-byte characters, `offset` and `length` will be
+   * calculated with respect to byte length and not the character position.
+   * If `msg` is an array, `offset` and `length` must not be specified.
    *
-   * If the socket has not been previously bound with a call to bind, it's
+   * The `address` argument is a string. If the value of `address` is a host name,
+   * DNS will be used to resolve the address of the host. If `address` is not provided
+   * or otherwise falsy, `'127.0.0.1'` (for `udp4` sockets) or `'::1'`
+   * (for `udp6` sockets) will be used by default.
+   *
+   * If the socket has not been previously bound with a call to `bind`, it's
    * assigned a random port number and bound to the "all interfaces" address
-   * (0.0.0.0 for udp4 sockets, ::0 for udp6 sockets).
+   * (`'0.0.0.0'` for `udp4` sockets, `'::0'` for `udp6` sockets).
    *
-   * @param {DataView|string|Array<any>} buffer Message to be sent
+   * An optional `callback` function may be specified to as a way of
+   * reporting DNS errors or for determining when it is safe to reuse the
+   * `buf` object.
+   *
+   * The only way to know for sure that the datagram has been sent is by
+   * using a `callback`. If an error occurs and a `callback` is given,
+   * the `error` will be passed as the first argument to the `callback`.
+   * If a `callback` is not given, the error is emitted as an `'error'`
+   * event on the `socket` object.
+   *
+   * Offset and length are optional but both _must_ be set if either are used.
+   * They are supported only when the first argument is a `Buffer`,
+   * a `TypedArray`, or a `DataView`.
+   *
+   * This method throws `ERR_SOCKET_BAD_PORT` if called on an unbound socket.
+   *
+   * @param {DataView|string|Array<any>} buffer Message to be sent.
    * @param {number} [offset] Offset in the buffer where the message starts.
    * @param {number} [length] Number of bytes in the message.
-   * @param {number} [port] destination port
-   * @param {string} [address] destination IP
-   * @param {function} [callback] Callback when message is done being delivered.
+   * @param {number} [port] Destination port.
+   * @param {string} [address] Destination host name or IP address.
+   * @param {(error?: Error) => void} [callback] Called when the message has been sent.
    */
-  send(buffer, offset = 0, length, port, address = '127.0.0.1', callback = () => {}) {
-    const self = this
-    if (typeof port !== 'number') throw new Error('invalid port')
-    if (!isValidIpOrHostname(address, this._ipRegex)) throw new Error('invalid address')
-    if (offset !== 0) throw new Error('Non-zero offset not supported yet')
+  send(buffer, offset = 0, length, port, address, callback) {
+    if (!address) {
+      if (this.type === 'udp4') address = '127.0.0.1'
+      else address = '::1'
+    }
+    if (port === undefined || address === undefined) {
+      throw new Error('socket.send(): address and port parameters must be provided')
+    }
+    if (offset !== 0) throw new Error('socket.send(): non-zero offset not supported yet')
     if (this._state === STATE.UNBOUND) {
-      /** @type {string | any[] | DataView} */
-      const args = [].slice.call(arguments)
-      return this.bind(0, (/** @type {string} */ err) => {
-        if (err) return callback(err)
-        self.send(args)
-      })
-    } else if (this._state === STATE.BINDING) {
-      // we're ok, GCDAsync(Udp)Socket handles queueing internally
+      throw new Error('ERR_SOCKET_BAD_PORT')
     }
     let str
     if (typeof buffer === 'string') {
@@ -182,25 +247,21 @@ export default class UdpSocket extends EventEmitter {
     } else {
       throw new Error('invalid message format')
     }
-    Sockets.send(
-      this._id,
-      str,
-      +port,
-      address,
-      /**
-       * @param {string | Error | undefined} err
-       */
-      (err) => {
-        err = normalizeError(err)
-        if (err) {
-          self._debug('send failed', err)
-          return callback(err)
-        }
-        callback()
+    Sockets.send(this._id, str, port, address, (/** @type {any} */ err) => {
+      err = normalizeError(err)
+      if (err) {
+        if (callback) callback(err)
+        else this.emit('error', err)
+      } else {
+        if (callback) callback()
       }
-    )
+    })
   }
 
+  /**
+   * Returns an object containing the address information for a socket.
+   * For UDP sockets, this object will contain `address`, `family` and `port` properties.
+   */
   address() {
     if (this._state !== STATE.BOUND) throw new Error('socket is not bound yet')
     return {
@@ -211,11 +272,16 @@ export default class UdpSocket extends EventEmitter {
   }
 
   /**
+   * Sets or clears the `SO_BROADCAST` socket option. When set to `true`,
+   * UDP packets may be sent to a local interface's broadcast address.
+   *
+   * This method throws `EBADF` if called on an unbound socket.
+   *
    * @param {boolean} flag
    */
   setBroadcast(flag) {
     const self = this
-    if (this._state !== STATE.BOUND) throw new Error('you must bind before setBroadcast()')
+    if (this._state !== STATE.BOUND) throw new Error('EBADF')
     Sockets.setBroadcast(
       this._id,
       flag,
@@ -225,63 +291,187 @@ export default class UdpSocket extends EventEmitter {
         err = normalizeError(err)
         if (err) {
           self._debug('failed to set broadcast', err)
-          return self.emit('error', err)
+          self.emit('error', err)
         }
       }
     )
   }
 
-  // @ts-ignore
+  /**
+   * NOT IMPLEMENTED
+   *
+   * @deprecated
+   * @param {string} multicastInterface
+   */
   // eslint-disable-next-line no-unused-vars
-  setTTL(ttl) {
-    console.warn('react-native-udp: setTTL() is ignored')
-  }
-
-  // @ts-ignore
-  // eslint-disable-next-line no-unused-vars
-  setMulticastTTL(ttl, callback) {
-    console.warn('react-native-udp: setMulticastTTL() is ignored')
-  }
-
-  // @ts-ignore
-  // eslint-disable-next-line no-unused-vars
-  setMulticastLoopback(flag, callback) {
-    console.warn('react-native-udp: setMulticastLoopback() is ignored')
+  setMulticastInterface(multicastInterface) {
+    console.warn('react-native-udp: setMulticastInterface() is not implemented')
   }
 
   /**
-   * @param {string} multicastAddress
+   * NOT IMPLEMENTED
+   *
+   * @deprecated
+   * @param {boolean} flag
    */
-  addMembership(multicastAddress) {
+  // eslint-disable-next-line no-unused-vars
+  setMulticastLoopback(flag) {
+    console.warn('react-native-udp: setMulticastLoopback() is not implemented')
+  }
+
+  /**
+   * NOT IMPLEMENTED
+   *
+   * @deprecated
+   * @param {number} ttl
+   */
+  // eslint-disable-next-line no-unused-vars
+  setMulticastTTL(ttl) {
+    console.warn('react-native-udp: setMulticastTTL() is not implemented')
+  }
+
+  /**
+   * NOT IMPLEMENTED
+   *
+   * @deprecated
+   * @param {number} size
+   */
+  // eslint-disable-next-line no-unused-vars
+  setRecvBufferSize(size) {
+    console.warn('react-native-udp: setRecvBufferSize() is not implemented')
+  }
+
+  /**
+   * NOT IMPLEMENTED
+   *
+   * @deprecated
+   * @param {number} size
+   */
+  // eslint-disable-next-line no-unused-vars
+  setSendBufferSize(size) {
+    console.warn('react-native-udp: setSendBufferSize() is not implemented')
+  }
+
+  /**
+   * NOT IMPLEMENTED
+   *
+   * @deprecated
+   * @param {number} ttl
+   */
+  // eslint-disable-next-line no-unused-vars
+  setTTL(ttl) {
+    console.warn('react-native-udp: setTTL() is not implemented')
+  }
+
+  /**
+   * NOT IMPLEMENTED
+   *
+   * @deprecated
+   */
+  unref() {
+    console.warn('react-native-udp: unref() is not implemented')
+  }
+
+  /**
+   * Tells the kernel to join a multicast group at the given `multicastAddress` and
+   * `multicastInterface` using the `IP_ADD_MEMBERSHIP` socket option.
+   *
+   * If the `multicastInterface` argument is not specified, the operating system will
+   * choose one interface and will add membership to it. To add membership to every
+   * available interface, call `addMembership` multiple times, once per interface.
+   *
+   * @param {string} multicastAddress
+   * @param {string} [multicastInterface]
+   */
+  addMembership(multicastAddress, multicastInterface) {
     if (this._state !== STATE.BOUND) throw new Error('you must bind before addMembership()')
+    if (multicastInterface) {
+      console.warn('react-native-udp: addMembership() ignores `multicastInterface` parameter')
+    }
     Sockets.addMembership(this._id, multicastAddress)
   }
 
   /**
-   * @param {string} multicastAddress
+   * NOT IMPLEMENTED
+   *
+   * @deprecated
+   * @param {string} sourceAddress
+   * @param {string} groupAddress
+   * @param {string} [multicastInterface]
    */
-  dropMembership(multicastAddress) {
+  // eslint-disable-next-line no-unused-vars
+  addSourceSpecificMembership(sourceAddress, groupAddress, multicastInterface) {
+    console.warn('react-native-udp: addSourceSpecificMembership() is not implemented')
+  }
+
+  /**
+   * Instructs the kernel to leave a multicast group at `multicastAddress` using the
+   * `IP_DROP_MEMBERSHIP` socket option. This method is automatically called by the
+   * kernel when the socket is closed or the process terminates, so most apps will
+   * never have reason to call this.
+   *
+   * If `multicastInterface` is not specified, the operating system will attempt to
+   * drop membership on all valid interfaces.
+   *
+   * @param {string} multicastAddress
+   * @param {string} [multicastInterface]
+   */
+  dropMembership(multicastAddress, multicastInterface) {
     if (this._state !== STATE.BOUND) throw new Error('you must bind before addMembership()')
+    if (multicastInterface) {
+      console.warn('react-native-udp: dropMembership() ignores `multicastInterface` parameter')
+    }
     Sockets.dropMembership(this._id, multicastAddress)
   }
 
+  /**
+   * NOT IMPLEMENTED
+   *
+   * @deprecated
+   * @param {string} sourceAddress
+   * @param {string} groupAddress
+   * @param {string} [multicastInterface]
+   */
+  // eslint-disable-next-line no-unused-vars
+  dropSourceSpecificMembership(sourceAddress, groupAddress, multicastInterface) {
+    console.warn('react-native-udp: dropSourceSpecificMembership() is not implemented')
+  }
+
+  /**
+   * NOT IMPLEMENTED
+   *
+   * @deprecated
+   */
+  getRecvBufferSize() {
+    console.warn('react-native-udp: getRecvBufferSize() is not implemented')
+  }
+
+  /**
+   * NOT IMPLEMENTED
+   *
+   * @deprecated
+   */
+  getSendBufferSize() {
+    console.warn('react-native-udp: getSendBufferSize() is not implemented')
+  }
+
+  /**
+   * NOT IMPLEMENTED
+   *
+   * @deprecated
+   */
   ref() {
-    console.warn('react-native-udp: ref() is ignored')
+    console.warn('react-native-udp: ref() is not implemented')
   }
 
-  unref() {
-    console.warn('react-native-udp: unref() is ignored')
+  /**
+   * NOT IMPLEMENTED
+   *
+   * @deprecated
+   */
+  remoteAddress() {
+    console.warn('react-native-udp: remoteAddress() is not implemented')
   }
-}
-
-/**
- * @param {string} address
- * @param {{ test: (arg0: string) => any; }} ipRegex
- */
-function isValidIpOrHostname(address, ipRegex) {
-  if (typeof address !== 'string') return false
-
-  return ipRegex.test(address) || hostnameRegex.test(address)
 }
 
 /**
