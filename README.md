@@ -110,7 +110,7 @@ const socket = dgram.createSocket({
 
 ## Maintainers
 
-- [Rapsssito](https://github.com/rapsssito) ([Support me](https://github.com/sponsors/Rapsssito))
+- [Rapsssito](https://github.com/rapsssito) [[Support me :heart:](https://github.com/sponsors/Rapsssito)]
 - [Mark Vayngrib](https://github.com/mvayngrib)
 
 ## License
