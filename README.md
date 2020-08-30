@@ -1,6 +1,6 @@
 # react-native-udp
 
-React Native UDP socket API for Android & iOS. It allows you to create UDP sockets, imitating some of Node's [dgram](https://nodejs.org/api/dgram.html) API functionalities (check the available API for more information).
+React Native UDP socket API for Android & iOS. It allows you to create UDP sockets, imitating Node's [dgram](https://nodejs.org/api/dgram.html) API functionalities (check each method documentation for more information).
 
 _This module is used by [Tradle](https://github.com/tradle)._
 
