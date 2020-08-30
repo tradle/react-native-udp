@@ -4,14 +4,6 @@ React Native UDP socket API for Android & iOS. It allows you to create UDP socke
 
 _This module is used by [Tradle](https://github.com/tradle)._
 
-### Note
-
-If you want to send and receive node Buffer objects, you'll have to "npm install buffer" and set it as a global for UdpSockets to pick it up:
-
-```js
-global.Buffer = global.Buffer || require('buffer').Buffer
-```
-
 ## Table of Contents
 
 - [Getting started](#getting-started)

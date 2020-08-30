@@ -1,8 +1,7 @@
 import { EventEmitter } from 'events'
+import { Buffer } from 'buffer'
 import { DeviceEventEmitter, NativeModules } from 'react-native'
 const Sockets = NativeModules.UdpSockets
-import { toByteArray, fromByteArray } from 'base64-js'
-const ipRegex = require('ip-regex')
 import normalizeBindOptions from './normalizeBindOptions'
 let instances = 0
 const STATE = {
@@ -26,15 +25,17 @@ export default class UdpSocket extends EventEmitter {
     this.type = options.type
     this.reusePort = options && options.reusePort
     this.debugEnabled = options && options.debug
-    if (this.type === 'udp4') {
-      this._ipRegex = ipRegex['v4']({ exact: true })
-    } else {
-      this._ipRegex = ipRegex['v6']({ exact: true })
-    }
+    /** @private */
+    this._destroyed = false
+    /** @private */
     this._id = instances++
+    /** @private */
     this._state = STATE.UNBOUND
+    /** @private */
     this._address = ''
+    /** @private */
     this._port = -1
+    /** @private */
     this._subscription = DeviceEventEmitter.addListener(
       `udp-${this._id}-data`,
       this._onReceive.bind(this)
@@ -42,7 +43,7 @@ export default class UdpSocket extends EventEmitter {
     if (onmessage) this.on('message', onmessage)
     Sockets.createSocket(this._id, {
       type: this.type,
-    }) // later
+    })
   }
 
   /**
@@ -119,8 +120,6 @@ export default class UdpSocket extends EventEmitter {
   close(callback = () => {}) {
     if (this._destroyed) return setImmediate(callback)
     this.once('close', callback)
-    if (this._destroying) return
-    this._destroying = true
     this._debug('closing')
     this._subscription.remove()
     Sockets.close(
@@ -165,8 +164,7 @@ export default class UdpSocket extends EventEmitter {
    */
   _onReceive(info) {
     // from base64 string
-    const buf =
-      typeof Buffer === 'undefined' ? toByteArray(info.data) : new Buffer(info.data, 'base64')
+    const buf = Buffer.from(info.data, 'base64')
     const rinfo = {
       address: info.address,
       port: info.port,
@@ -216,14 +214,15 @@ export default class UdpSocket extends EventEmitter {
    *
    * This method throws `ERR_SOCKET_BAD_PORT` if called on an unbound socket.
    *
-   * @param {DataView|string|Array<any>} buffer Message to be sent.
+   * @param {string | Buffer | Uint8Array | Array<any>} msg Message to be sent.
    * @param {number} [offset] Offset in the buffer where the message starts.
    * @param {number} [length] Number of bytes in the message.
    * @param {number} [port] Destination port.
    * @param {string} [address] Destination host name or IP address.
    * @param {(error?: Error) => void} [callback] Called when the message has been sent.
    */
-  send(buffer, offset = 0, length, port, address, callback) {
+  send(msg, offset, length, port, address, callback) {
+    if (this._state === STATE.UNBOUND) throw new Error('ERR_SOCKET_BAD_PORT')
     if (!address) {
       if (this.type === 'udp4') address = '127.0.0.1'
       else address = '::1'
@@ -231,22 +230,16 @@ export default class UdpSocket extends EventEmitter {
     if (port === undefined || address === undefined) {
       throw new Error('socket.send(): address and port parameters must be provided')
     }
-    if (offset !== 0) throw new Error('socket.send(): non-zero offset not supported yet')
-    if (this._state === STATE.UNBOUND) {
-      throw new Error('ERR_SOCKET_BAD_PORT')
+    if (Array.isArray(msg) && offset !== undefined && length !== undefined) {
+      throw new Error('socket.send(): offset and length must be undefined for an Array msg')
     }
-    let str
-    if (typeof buffer === 'string') {
-      console.warn('socket.send(): interpreting as base64')
-      str = buffer
-    } else if (typeof Buffer !== 'undefined' && Buffer.isBuffer(buffer)) {
-      str = buffer.toString('base64')
-    } else if (buffer instanceof Uint8Array || Array.isArray(buffer)) {
-      // @ts-ignore
-      str = fromByteArray(buffer)
-    } else {
-      throw new Error('invalid message format')
-    }
+    // Generate msg buffer
+    let generatedBuffer = this._generateSendBuffer(msg)
+    if (offset === undefined) offset = 0
+    if (length === undefined) length = generatedBuffer.length
+    generatedBuffer = Buffer.from(generatedBuffer, offset, length)
+    const str = generatedBuffer.toString('base64')
+    // Call native module
     Sockets.send(this._id, str, port, address, (/** @type {any} */ err) => {
       err = normalizeError(err)
       if (err) {
@@ -256,6 +249,23 @@ export default class UdpSocket extends EventEmitter {
         if (callback) callback()
       }
     })
+  }
+
+  /**
+   * @private
+   * @param {string | Buffer | Uint8Array | Array<any>} msg
+   * @param {BufferEncoding} [encoding]
+   */
+  _generateSendBuffer(msg, encoding = 'utf-8') {
+    if (typeof msg === 'string') {
+      return Buffer.from(msg, encoding)
+    } else if (Buffer.isBuffer(msg)) {
+      return msg
+    } else if (msg instanceof Uint8Array || Array.isArray(msg)) {
+      return Buffer.from(msg)
+    } else {
+      throw new TypeError(`Invalid type for msg, found ${typeof msg}`)
+    }
   }
 
   /**
