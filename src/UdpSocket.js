@@ -230,14 +230,11 @@ export default class UdpSocket extends EventEmitter {
     if (port === undefined || address === undefined) {
       throw new Error('socket.send(): address and port parameters must be provided')
     }
-    if (Array.isArray(msg) && offset !== undefined && length !== undefined) {
-      throw new Error('socket.send(): offset and length must be undefined for an Array msg')
+    if (Array.isArray(msg) && (offset !== undefined || length !== undefined)) {
+      throw new Error('socket.send(): offset and length must be undefined for a msg of type Array')
     }
     // Generate msg buffer
-    let generatedBuffer = this._generateSendBuffer(msg)
-    if (offset === undefined) offset = 0
-    if (length === undefined) length = generatedBuffer.length
-    generatedBuffer = Buffer.from(generatedBuffer, offset, length)
+    const generatedBuffer = this._generateSendBuffer(msg).slice(offset, length)
     const str = generatedBuffer.toString('base64')
     // Call native module
     Sockets.send(this._id, str, port, address, (/** @type {any} */ err) => {
