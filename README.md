@@ -1,16 +1,8 @@
 # react-native-udp
 
-React Native UDP socket API for Android & iOS. It allows you to create UDP sockets, imitating some of Node's [dgram](https://nodejs.org/api/dgram.html) API functionalities (check the available API for more information).
+React Native UDP socket API for Android & iOS. It allows you to create UDP sockets, imitating Node's [dgram](https://nodejs.org/api/dgram.html) API functionalities (check each method documentation for more information).
 
 _This module is used by [Tradle](https://github.com/tradle)._
-
-### Note
-
-If you want to send and receive node Buffer objects, you'll have to "npm install buffer" and set it as a global for UdpSockets to pick it up:
-
-```js
-global.Buffer = global.Buffer || require('buffer').Buffer
-```
 
 ## Table of Contents
 
@@ -118,7 +110,7 @@ const socket = dgram.createSocket({
 
 ## Mantainers
 
-- [Rapsssito](https://github.com/rapsssito)
+- [Rapsssito](https://github.com/rapsssito) ([Support me](https://github.com/sponsors/Rapsssito))
 - [Mark Vayngrib](https://github.com/mvayngrib)
 
 ## License

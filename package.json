@@ -1,18 +1,31 @@
 {
   "name": "react-native-udp",
-  "version": "3.2.0",
-  "description": "node's dgram API for react-native",
-  "main": "UdpSockets.js",
-  "types": "index.d.ts",
+  "version": "3.3.0",
+  "description": "React Native UDP socket API for Android & iOS",
+  "main": "src/index.js",
+  "types": "lib/types/index.d.ts",
   "scripts": {
-    "ci": "yarn install --frozen-lockfile && yarn lint && yarn test",
-    "start": "exit 1",
-    "test": "jest",
-    "lint": "eslint ."
+    "ci": "yarn install --frozen-lockfile && yarn lint && yarn declaration:build && yarn checkjs && yarn test",
+    "lint": "eslint .",
+    "checkjs": "tsc",
+    "test": "jest ./__tests__",
+    "declaration:build": "tsc -p ./declaration.tsconfig.json",
+    "prepublishOnly": "yarn declaration:build && yarn checkjs"
   },
   "browser": {
-    "dgram": "./UdpSockets.js"
+    "dgram": "src/index.js"
   },
+  "files": [
+    "/android/src/",
+    "/android/build.gradle",
+    "/ios",
+    "!Podfile*",
+    "/windows",
+    "/src",
+    "/lib",
+    "/*.podspec",
+    "/jest"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/tradle/react-native-udp"
@@ -22,22 +35,19 @@
     "dgram",
     "udp",
     "sockets",
-    "ios",
-    "android"
+    "iOS",
+    "Android"
   ],
   "author": {
     "name": "Mark Vayngrib",
     "email": "mark.vayngrib@lablz.com"
   },
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/tradle/react-native-udp/issues"
-  },
-  "homepage": "https://github.com/tradle/react-native-udp",
+  "licenseFilename": "LICENSE",
+  "readmeFilename": "README.md",
   "dependencies": {
-    "base64-js": "1.3.1",
-    "events": "^3.1.0",
-    "ip-regex": "^4.1.0"
+    "buffer": "^5.6.0",
+    "events": "^3.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.8.0",
@@ -46,6 +56,9 @@
     "@semantic-release/git": "^9.0.0",
     "@semantic-release/github": "^7.0.7",
     "@semantic-release/npm": "^7.0.5",
+    "@types/base64-js": "^1.3.0",
+    "@types/jest": "^26.0.10",
+    "@types/react-native": "^0.63.10",
     "babel-eslint": "^10.0.3",
     "babel-jest": "^24.9.0",
     "eslint": "^6.8.0",
@@ -55,6 +68,7 @@
     "jest": "^24.9.0",
     "prettier": "^1.19.1",
     "react-native": "^0.61.5",
-    "semantic-release": "^17.1.1"
+    "semantic-release": "^17.1.1",
+    "typescript": "^4.0.2"
   }
 }
