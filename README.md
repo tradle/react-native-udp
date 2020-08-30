@@ -108,7 +108,7 @@ const socket = dgram.createSocket({
 })
 ```
 
-## Mantainers
+## Maintainers
 
 - [Rapsssito](https://github.com/rapsssito) ([Support me](https://github.com/sponsors/Rapsssito))
 - [Mark Vayngrib](https://github.com/mvayngrib)
