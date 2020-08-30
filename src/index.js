@@ -14,7 +14,7 @@ export default class UdpSockets {
    * @param {(msg: Buffer) => void} [callback]
    */
   static createSocket(options, callback) {
-    if (!callback) console.warn('react-native-udp: createSocket() ignores callback parameter')
+    if (callback) console.warn('react-native-udp: createSocket() ignores callback parameter')
     if (typeof options === 'string') options = { type: options }
     return new UdpSocket(options)
   }
