@@ -77,29 +77,29 @@ If you can't or don't want to use the CLI tool, you can also manually link the l
 
 ## Usage
 
-_see/run [index.js](examples/udpsockets) for a complete example, but basically it's just like dgram_
+_see/run [index.js](examples/udpsockets) for a complete example, but the interface is like dgram's_
 
 ```js
 import dgram from 'react-native-udp'
-var socket = dgram.createSocket('udp4')
+
+const socket = dgram.createSocket('udp4')
 socket.bind(12345)
 socket.once('listening', function() {
-  var buf = toByteArray('excellent!')
-  socket.send(buf, 0, buf.length, remotePort, remoteHost, function(err) {
+  socket.send('Hello World!', undefined, undefined, remotePort, remoteHost, function(err) {
     if (err) throw err
 
-    console.log('message was sent')
+    console.log('Message sent!')
   })
 })
 
 socket.on('message', function(msg, rinfo) {
-  console.log('message was received', msg)
+  console.log('Message received', msg)
 })
 ```
 
 ### Debugging
 
-To see the events emitted from the native modules, supply the debug option when creating the socket:
+To log all info emitted from the socket, add `debug` option when creating the socket:
 
 ```js
 const socket = dgram.createSocket({
