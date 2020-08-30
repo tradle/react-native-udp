@@ -1,3 +1,15 @@
+# [4.0.0](https://github.com/tradle/react-native-udp/compare/v3.2.0...v4.0.0) (2020-08-30)
+
+
+### Features
+
+* Match NodeJS dgram API ([#133](https://github.com/tradle/react-native-udp/issues/133)) ([2f8dc35](https://github.com/tradle/react-native-udp/commit/2f8dc35d18a7875616bd18d4e6dd5f1d74b6230a)), closes [#132](https://github.com/tradle/react-native-udp/issues/132) [#128](https://github.com/tradle/react-native-udp/issues/128)
+
+
+### BREAKING CHANGES
+
+* All methods no longer check parameter types. socket.send() now throws 'ERR_SOCKET_BAD_PORT' when sending on unbound sockets. socket.send() no longer checks if ddress is a valid IP or hostname.
+
 # [3.2.0](https://github.com/tradle/react-native-udp/compare/v3.1.0...v3.2.0) (2020-08-15)
 
 
