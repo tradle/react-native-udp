@@ -1,3 +1,10 @@
+## [4.0.1](https://github.com/tradle/react-native-udp/compare/v4.0.0...v4.0.1) (2020-09-01)
+
+
+### Bug Fixes
+
+* Add missing attribute "homepage" to package.json ([#135](https://github.com/tradle/react-native-udp/issues/135)) ([74d75c1](https://github.com/tradle/react-native-udp/commit/74d75c139dbca0049b5c201d5d3144a5c22c09f6))
+
 # [4.0.0](https://github.com/tradle/react-native-udp/compare/v3.2.0...v4.0.0) (2020-08-30)
 
 
