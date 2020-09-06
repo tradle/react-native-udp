@@ -1,6 +1,6 @@
 import UdpSocket from './UdpSocket'
 
-export default class UdpSockets {
+module.exports = class UdpSockets {
   /**
    * Creates a `UdpSockets.Socket` object. Once the socket is created, calling
    * `socket.bind()` will instruct the socket tobegin listening for datagram
