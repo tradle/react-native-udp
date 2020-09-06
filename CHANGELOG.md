@@ -1,3 +1,10 @@
+## [4.0.2](https://github.com/tradle/react-native-udp/compare/v4.0.1...v4.0.2) (2020-09-06)
+
+
+### Bug Fixes
+
+* Add backwards compatiblity with CommonJS require() ([#137](https://github.com/tradle/react-native-udp/issues/137)) ([af36905](https://github.com/tradle/react-native-udp/commit/af36905bd92dbf78194f2d2d38aa531e9e2b4553))
+
 ## [4.0.1](https://github.com/tradle/react-native-udp/compare/v4.0.0...v4.0.1) (2020-09-01)
 
 

@@ -1,4 +1,5 @@
-export default class UdpSockets {
+export default UdpSockets;
+declare class UdpSockets {
     /**
      * Creates a `UdpSockets.Socket` object. Once the socket is created, calling
      * `socket.bind()` will instruct the socket tobegin listening for datagram
