@@ -1,3 +1,10 @@
+## [4.0.3](https://github.com/tradle/react-native-udp/compare/v4.0.2...v4.0.3) (2020-10-01)
+
+
+### Bug Fixes
+
+* Fix Xcode 12 compatibility ([#138](https://github.com/tradle/react-native-udp/issues/138)) ([750960b](https://github.com/tradle/react-native-udp/commit/750960b8dd7768bd20ea709292e9a4656c9206f4)), closes [facebook/react-native#29633](https://github.com/facebook/react-native/issues/29633)
+
 ## [4.0.2](https://github.com/tradle/react-native-udp/compare/v4.0.1...v4.0.2) (2020-09-06)
 
 
