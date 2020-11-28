@@ -1,3 +1,10 @@
+## [4.0.4](https://github.com/tradle/react-native-udp/compare/v4.0.3...v4.0.4) (2020-11-28)
+
+
+### Bug Fixes
+
+* **Android:** Switch to Java Standard concurrent API ([#145](https://github.com/tradle/react-native-udp/issues/145)) ([373edf0](https://github.com/tradle/react-native-udp/commit/373edf03bd274fa8d00609211177bee813978dd1))
+
 ## [4.0.3](https://github.com/tradle/react-native-udp/compare/v4.0.2...v4.0.3) (2020-10-01)
 
 
