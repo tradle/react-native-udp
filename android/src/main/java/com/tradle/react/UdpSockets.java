@@ -297,6 +297,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
      */
     @Override
     public void didReceiveData(final UdpSocketClient socket, final String data, final String host, final int port) {
+        final long ts = System.currentTimeMillis();
         executorService.execute(new Thread(new Runnable() {
             @Override
             public void run() {
@@ -317,6 +318,8 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                 eventParams.putString("data", data);
                 eventParams.putString("address", host);
                 eventParams.putInt("port", port);
+                // Use string for ts since it's 64 bits and putInt is only 32
+                eventParams.putString("ts", Long.toString(ts));
 
                 ReactContext reactContext = UdpSockets.this.getReactApplicationContext();
                 reactContext

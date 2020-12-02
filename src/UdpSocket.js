@@ -160,7 +160,7 @@ export default class UdpSocket extends EventEmitter {
 
   /**
    * @private
-   * @param {{ data: string; address: string; port: number; }} info
+   * @param {{ data: string; address: string; port: number; ts: number; }} info
    */
   _onReceive(info) {
     // from base64 string
@@ -170,6 +170,7 @@ export default class UdpSocket extends EventEmitter {
       port: info.port,
       family: 'IPv4',
       size: buf.length,
+      ts: Number(info.ts),
     }
     this.emit('message', buf, rinfo)
   }
