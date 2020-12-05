@@ -69,21 +69,18 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
      *             binding.
      */
     public void bind(Integer port, @Nullable String address) throws IOException {
-        mSocket = new MulticastSocket(null);
-
-        mReceiverTask = new UdpReceiverTask();
-
         SocketAddress socketAddress;
         if (address != null) {
             socketAddress = new InetSocketAddress(InetAddress.getByName(address), port);
         } else {
             socketAddress = new InetSocketAddress(port);
         }
-
+        
+        mSocket = new MulticastSocket(socketAddress);
         mSocket.setReuseAddress(mReuseAddress);
-        mSocket.bind(socketAddress);
 
         // begin listening for data in the background
+        mReceiverTask = new UdpReceiverTask();
         mReceiverTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
                 new Pair<DatagramSocket, UdpReceiverTask.OnDataReceivedListener>(mSocket, this));
     }
