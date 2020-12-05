@@ -68,7 +68,7 @@ export default class UdpSocket extends EventEmitter {
     disconnect(): void;
     /**
      * @private
-     * @param {{ data: string; address: string; port: number; }} info
+     * @param {{ data: string; address: string; port: number; ts: number; }} info
      */
     private _onReceive;
     /**

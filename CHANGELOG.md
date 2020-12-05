@@ -1,3 +1,10 @@
+# [4.1.0](https://github.com/tradle/react-native-udp/compare/v4.0.4...v4.1.0) (2020-12-05)
+
+
+### Features
+
+* Add rx timestamp to rinfo payload ([#146](https://github.com/tradle/react-native-udp/issues/146)) ([c468a39](https://github.com/tradle/react-native-udp/commit/c468a3942b7637302b33cf9946f2e89818ea70fb))
+
 ## [4.0.4](https://github.com/tradle/react-native-udp/compare/v4.0.3...v4.0.4) (2020-11-28)
 
 
