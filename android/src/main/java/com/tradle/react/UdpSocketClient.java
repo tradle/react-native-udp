@@ -75,7 +75,7 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
         } else {
             socketAddress = new InetSocketAddress(port);
         }
-        
+
         mSocket = new MulticastSocket(socketAddress);
         mSocket.setReuseAddress(mReuseAddress);
 
