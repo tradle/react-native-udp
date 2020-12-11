@@ -92,7 +92,7 @@ export default class UdpSocket extends EventEmitter {
        * @param {any} err
        * @param {{ address: any; port: any; }} addr
        */
-      function(err, addr) {
+      function (err, addr) {
         err = normalizeError(err)
         if (err) {
           // questionable: may want to self-destruct and
@@ -122,6 +122,7 @@ export default class UdpSocket extends EventEmitter {
     this.once('close', callback)
     this._debug('closing')
     this._subscription.remove()
+    instances--
     Sockets.close(
       this._id,
       /**
