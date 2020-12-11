@@ -122,6 +122,7 @@ export default class UdpSocket extends EventEmitter {
     this.once('close', callback)
     this._debug('closing')
     this._subscription.remove()
+    instances--
     Sockets.close(
       this._id,
       /**
@@ -277,6 +278,14 @@ export default class UdpSocket extends EventEmitter {
       port: this._port,
       family: 'IPv4',
     }
+  }
+
+  /**
+   * Returns the state of the socket
+   * @return {Number} -  0 (UNBOUND), 1 (BINDING), 2 (BOUND)
+   */
+  getState() {
+    return this._state
   }
 
   /**
