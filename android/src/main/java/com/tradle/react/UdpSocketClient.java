@@ -1,16 +1,7 @@
-/**
- *  UdpSocketClient.java
- *  react-native-udp
- *
- *  Created by Andy Prock on 9/24/15.
- */
-
 package com.tradle.react;
 
-import android.os.AsyncTask;
 import androidx.annotation.Nullable;
 import android.util.Base64;
-import android.util.Pair;
 
 import com.facebook.react.bridge.Callback;
 
@@ -33,7 +24,6 @@ import static com.tradle.react.UdpSenderTask.OnDataSentListener;
 public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedListener, OnDataSentListener {
     private final OnDataReceivedListener mReceiverListener;
     private final OnRuntimeExceptionListener mExceptionListener;
-    private final boolean mReuseAddress;
 
     private UdpReceiverTask mReceiverTask;
 
@@ -41,11 +31,10 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
     private DatagramSocket mSocket;
     private boolean mIsMulticastSocket = false;
 
-    private UdpSocketClient(Builder builder) {
-        this.mReceiverListener = builder.receiverListener;
-        this.mExceptionListener = builder.exceptionListener;
-        this.mReuseAddress = builder.reuse;
-        this.mPendingSends = new ConcurrentHashMap<UdpSenderTask, Callback>();
+    public UdpSocketClient(OnDataReceivedListener receiverListener,  OnRuntimeExceptionListener exceptionListener) {
+        this.mReceiverListener = receiverListener;
+        this.mExceptionListener = exceptionListener;
+        this.mPendingSends = new ConcurrentHashMap<>();
     }
 
     /**
@@ -69,6 +58,9 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
      *             binding.
      */
     public void bind(Integer port, @Nullable String address) throws IOException {
+        if (mSocket != null || mReceiverTask != null) {
+            throw new IllegalStateException("Socket is already bound");
+        }
         SocketAddress socketAddress;
         if (address != null) {
             socketAddress = new InetSocketAddress(InetAddress.getByName(address), port);
@@ -77,12 +69,11 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
         }
 
         mSocket = new MulticastSocket(socketAddress);
-        mSocket.setReuseAddress(mReuseAddress);
+        mSocket.setReuseAddress(true);
 
         // begin listening for data in the background
-        mReceiverTask = new UdpReceiverTask();
-        mReceiverTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
-                new Pair<DatagramSocket, UdpReceiverTask.OnDataReceivedListener>(mSocket, this));
+        mReceiverTask = new UdpReceiverTask(mSocket, this);
+        new Thread(mReceiverTask).start();
     }
 
     /**
@@ -160,17 +151,19 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
     /**
      * Shuts down the receiver task, closing the socket.
      */
-    public void close() throws IOException {
-        if (mReceiverTask != null && !mReceiverTask.isCancelled()) {
-            // stop the receiving task
-            mReceiverTask.cancel(true);
+    public void close() {
+        // stop the receiving task
+        if (mReceiverTask != null && mReceiverTask.isRunning()) {
+            mReceiverTask.terminate();
         }
 
         // close the socket
         if (mSocket != null && !mSocket.isClosed()) {
             mSocket.close();
-            mSocket = null;
         }
+
+        mSocket = null;
+        mReceiverTask = null;
     }
 
     /**
@@ -239,27 +232,6 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
         mExceptionListener.didReceiveException(exception);
         synchronized (mPendingSends) {
             mPendingSends.remove(task);
-        }
-    }
-
-
-    public static class Builder {
-        private OnDataReceivedListener receiverListener;
-        private OnRuntimeExceptionListener exceptionListener;
-        private boolean reuse = true;
-
-        public Builder(OnDataReceivedListener receiverListener, OnRuntimeExceptionListener exceptionListener) {
-            this.receiverListener = receiverListener;
-            this.exceptionListener = exceptionListener;
-        }
-
-        public Builder reuseAddress(boolean reuse) {
-            this.reuse = reuse;
-            return this;
-        }
-
-        public UdpSocketClient build() {
-            return new UdpSocketClient(this);
         }
     }
 
