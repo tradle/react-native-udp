@@ -5,6 +5,7 @@
         "noEmit": true,
         "strict": true,
         "skipLibCheck": true,
+        "typeRoots": ["@types/events"]
     },
-    "include": ["src", "lib", "__tests__", "__mocks__"],
+    "include": ["src"]
 }

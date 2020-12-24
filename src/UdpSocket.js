@@ -10,6 +10,9 @@ const STATE = {
   BOUND: 2,
 }
 
+/**
+ * @typedef {"ascii" | "utf8" | "utf-8" | "utf16le" | "ucs2" | "ucs-2" | "base64" | "latin1" | "binary" | "hex"} BufferEncoding
+ */
 export default class UdpSocket extends EventEmitter {
   /**
    * @param {{ type: string; reusePort?: boolean; debug?: boolean; }} options
@@ -92,7 +95,7 @@ export default class UdpSocket extends EventEmitter {
        * @param {any} err
        * @param {{ address: any; port: any; }} addr
        */
-      function(err, addr) {
+      function (err, addr) {
         err = normalizeError(err)
         if (err) {
           // questionable: may want to self-destruct and
@@ -260,7 +263,7 @@ export default class UdpSocket extends EventEmitter {
     } else if (Buffer.isBuffer(msg)) {
       return msg
     } else if (msg instanceof Uint8Array || Array.isArray(msg)) {
-      return Buffer.from(msg)
+      return Buffer.from(/** @type {any[]} */ (msg))
     } else {
       throw new TypeError(`Invalid type for msg, found ${typeof msg}`)
     }
