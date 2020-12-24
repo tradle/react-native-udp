@@ -1,7 +1,7 @@
 import normalizeBindOptions from '../src/normalizeBindOptions'
 
-describe('normalizeBindOptions', function() {
-  it('should support all combinations of arguments for [port], [address], [callback]', function() {
+describe('normalizeBindOptions', function () {
+  it('should support all combinations of arguments for [port], [address], [callback]', function () {
     const args = [
       { name: 'port', value: 1234 },
       { name: 'address', value: '1.2.3.4' },
@@ -22,7 +22,7 @@ describe('normalizeBindOptions', function() {
     }
   })
 
-  it('should support all combinations of arguments for [options], [callback]', function() {
+  it('should support all combinations of arguments for [options], [callback]', function () {
     const callback = () => {}
     const inOut = [
       [[{ port: 123 }, callback], { port: 123, callback }],

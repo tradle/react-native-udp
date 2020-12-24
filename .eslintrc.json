@@ -23,7 +23,8 @@
         "no-var": "error",
         "prefer-template": 2,
         "require-atomic-updates": "off",
-        "prettier/prettier": ["error"]
+        "prettier/prettier": ["error", {"endOfLine": "auto"}
+        ]
     },
     "globals": {
         "__DEV__": true

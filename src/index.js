@@ -1,5 +1,8 @@
 import UdpSocket from './UdpSocket'
 
+/**
+ * @typedef {import('buffer').Buffer} Buffer
+ */
 class UdpSockets {
   /**
    * Creates a `UdpSockets.Socket` object. Once the socket is created, calling
@@ -24,4 +27,5 @@ class UdpSockets {
 
 export default UdpSockets
 
+// @ts-ignore
 module.exports = UdpSockets
