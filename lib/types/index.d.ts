@@ -1,4 +1,8 @@
 export default UdpSockets;
+export type Buffer = import("buffer").Buffer;
+/**
+ * @typedef {import('buffer').Buffer} Buffer
+ */
 declare class UdpSockets {
     /**
      * Creates a `UdpSockets.Socket` object. Once the socket is created, calling

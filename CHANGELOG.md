@@ -1,3 +1,10 @@
+## [4.1.1](https://github.com/tradle/react-native-udp/compare/v4.1.0...v4.1.1) (2020-12-24)
+
+
+### Bug Fixes
+
+* Fix TypeScript declaration inheritance ([#153](https://github.com/tradle/react-native-udp/issues/153)) ([3e5b4f7](https://github.com/tradle/react-native-udp/commit/3e5b4f71d021f19d7720b7ccf05a343f93591d15))
+
 # [4.1.0](https://github.com/tradle/react-native-udp/compare/v4.0.4...v4.1.0) (2020-12-05)
 
 

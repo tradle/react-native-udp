@@ -1,4 +1,6 @@
-/// <reference types="node" />
+/**
+ * @typedef {"ascii" | "utf8" | "utf-8" | "utf16le" | "ucs2" | "ucs-2" | "base64" | "latin1" | "binary" | "hex"} BufferEncoding
+ */
 export default class UdpSocket extends EventEmitter {
     /**
      * @param {{ type: string; reusePort?: boolean; debug?: boolean; }} options
@@ -50,7 +52,7 @@ export default class UdpSocket extends EventEmitter {
      *
      * @param {(...args: any[]) => void} callback
      */
-    close(callback?: (...args: any[]) => void): NodeJS.Immediate | undefined;
+    close(callback?: (...args: any[]) => void): number | undefined;
     /**
      * NOT IMPLEMENTED
      *
@@ -259,5 +261,6 @@ export default class UdpSocket extends EventEmitter {
      */
     remoteAddress(): void;
 }
-import { EventEmitter } from "node/events";
+export type BufferEncoding = "ascii" | "utf8" | "utf-8" | "utf16le" | "ucs2" | "ucs-2" | "base64" | "latin1" | "binary" | "hex";
+import { EventEmitter } from "events";
 import { Buffer } from "buffer";
