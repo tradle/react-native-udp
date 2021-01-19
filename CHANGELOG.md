@@ -1,3 +1,10 @@
+## [4.1.2](https://github.com/tradle/react-native-udp/compare/v4.1.1...v4.1.2) (2021-01-19)
+
+
+### Bug Fixes
+
+* **Android:** Fix null MulticastSocket creation ([#148](https://github.com/tradle/react-native-udp/issues/148)) ([3d52791](https://github.com/tradle/react-native-udp/commit/3d527916a24e3837c2eca194f2474af22a737cef))
+
 ## [4.1.1](https://github.com/tradle/react-native-udp/compare/v4.1.0...v4.1.1) (2020-12-24)
 
 
