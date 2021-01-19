@@ -53,10 +53,11 @@ public final class UdpSockets extends ReactContextBaseJavaModule
             @Override
             public void run() {
                 for (int i = 0; i < mClients.size(); i++) {
-                    try {
-                        mClients.valueAt(i).close();
-                    } catch (IOException e) {
-                        FLog.e(TAG, "exception when shutting down", e);
+                    UdpSocketClient client = mClients.valueAt(i);
+                    client.close();
+                    if (mMulticastLock != null && mMulticastLock.isHeld() && client.isMulticast()) {
+                        // drop the multi-cast lock if this is a multi-cast client
+                        mMulticastLock.release();
                     }
                 }
                 mClients.clear();
@@ -95,9 +96,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
             FLog.e(TAG, "createSocket called twice with the same id.");
             return;
         }
-
-        UdpSocketClient.Builder builder = new UdpSocketClient.Builder(UdpSockets.this, UdpSockets.this);
-        mClients.put(cId, builder.build());
+        mClients.put(cId, new UdpSocketClient(this, this));
     }
 
     /**
@@ -122,15 +121,9 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                     result.putInt("port", port);
 
                     callback.invoke(null, result);
-                } catch (SocketException se) {
+                } catch (Exception e) {
                     // Socket is already bound or a problem occurred during binding
-                    callback.invoke(UdpErrorUtil.getError(null, se.getMessage()));
-                } catch (IllegalArgumentException iae) {
-                    // SocketAddress is not supported
-                    callback.invoke(UdpErrorUtil.getError(null, iae.getMessage()));
-                } catch (IOException ioe) {
-                    // an exception occurred
-                    callback.invoke(UdpErrorUtil.getError(null, ioe.getMessage()));
+                    callback.invoke(UdpErrorUtil.getError(null, e.getMessage()));
                 }
             }
         }));
@@ -256,14 +249,8 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                     // drop the multi-cast lock if this is a multi-cast client
                     mMulticastLock.release();
                 }
-
-                try {
-                    client.close();
-                    callback.invoke();
-                } catch (IOException ioe) {
-                    callback.invoke(UdpErrorUtil.getError(null, ioe.getMessage()));
-                }
-
+                client.close();
+                callback.invoke();
                 mClients.remove(cId);
             }
         }));
