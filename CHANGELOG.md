@@ -1,3 +1,10 @@
+## [4.1.3](https://github.com/tradle/react-native-udp/compare/v4.1.2...v4.1.3) (2021-09-08)
+
+
+### Bug Fixes
+
+* Fix podspec to be compliant with latest Cocoapods ([#191](https://github.com/tradle/react-native-udp/issues/191)) ([006361b](https://github.com/tradle/react-native-udp/commit/006361b95b1e6c836225cdb95fe733f41bdf2afb))
+
 ## [4.1.2](https://github.com/tradle/react-native-udp/compare/v4.1.1...v4.1.2) (2021-01-19)
 
 
