@@ -66,7 +66,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
     }
 
     /**
-     * Private method to retrieve clients. Must be called from a GuardedAsyncTask for thread-safety.
+     * Private method to retrieve clients.
      */
     private UdpSocketClient findClient(final Integer cId, final Callback callback) {
         final UdpSocketClient client = mClients.get(cId);
