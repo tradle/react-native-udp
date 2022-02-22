@@ -7,8 +7,6 @@
 
 package com.tradle.react;
 
-import android.os.AsyncTask;
-
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.DatagramPacket;
@@ -18,24 +16,32 @@ import java.net.SocketAddress;
 /**
  * Specialized AsyncTask that transmits data in the background, and notifies listeners of the result.
  */
-public class UdpSenderTask extends AsyncTask<UdpSenderTask.SenderPacket, Void, Void> {
+public class UdpSenderTask implements Runnable {
     private static final String TAG = "UdpSenderTask";
 
-    private DatagramSocket mSocket;
-    private WeakReference<OnDataSentListener> mListener;
+    private final DatagramSocket mSocket;
+    private final WeakReference<OnDataSentListener> mListener;
 
-    public UdpSenderTask(DatagramSocket socket, OnDataSentListener listener) {
+    private SocketAddress mSocketAddress;
+    private byte[] mData;
+
+    public UdpSenderTask(DatagramSocket socket, OnDataSentListener listener, SocketAddress socketAddress, byte[] data) {
         this.mSocket = socket;
-        this.mListener = new WeakReference<OnDataSentListener>(listener);
+        this.mListener = new WeakReference<>(listener);
+        this.mSocketAddress = socketAddress;
+        this.mData = data;
     }
 
     @Override
-    protected Void doInBackground(SenderPacket... params) {
+    public void run() {
         OnDataSentListener listener = mListener.get();
 
         try {
-            SenderPacket packet = params[0];
-            mSocket.send(new DatagramPacket(packet.data, packet.data.length, packet.socketAddress));
+            if (mSocket == null) {
+                return;
+            }
+
+            mSocket.send(new DatagramPacket(mData, mData.length, mSocketAddress));
 
             if (listener != null) {
                 listener.onDataSent(this);
@@ -49,16 +55,6 @@ public class UdpSenderTask extends AsyncTask<UdpSenderTask.SenderPacket, Void, V
                 listener.onDataSentRuntimeException(this, rte);
             }
         }
-
-        return null;
-    }
-
-    /**
-     * Simple class to marshall outgoing data across to this AsyncTask
-     */
-    public static class SenderPacket {
-        SocketAddress socketAddress;
-        byte[] data;
     }
 
     /**
