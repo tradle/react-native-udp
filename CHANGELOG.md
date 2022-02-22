@@ -1,3 +1,10 @@
+## [4.1.4](https://github.com/tradle/react-native-udp/compare/v4.1.3...v4.1.4) (2022-02-22)
+
+
+### Bug Fixes
+
+* Remove AsyncTask in the send function (it's deprecated) ([#197](https://github.com/tradle/react-native-udp/issues/197)) ([179a948](https://github.com/tradle/react-native-udp/commit/179a9480004ce15c83fbcaa4ec3d9cd9fa9f950a))
+
 ## [4.1.3](https://github.com/tradle/react-native-udp/compare/v4.1.2...v4.1.3) (2021-09-08)
 
 
