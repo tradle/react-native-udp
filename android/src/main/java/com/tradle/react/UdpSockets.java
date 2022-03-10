@@ -220,13 +220,8 @@ public final class UdpSockets extends ReactContextBaseJavaModule
 
                 try {
                     client.send(base64String, port, address, callback);
-                } catch (IllegalStateException ise) {
-                    callback.invoke(UdpErrorUtil.getError(null, ise.getMessage()));
-                } catch (UnknownHostException uhe) {
-                    callback.invoke(UdpErrorUtil.getError(null, uhe.getMessage()));
-                } catch (IOException ioe) {
-                    // an exception occurred
-                    callback.invoke(UdpErrorUtil.getError(null, ioe.getMessage()));
+                } catch (Exception exception) {
+                    callback.invoke((UdpErrorUtil.getError(null, exception.getMessage())));
                 }
             }
         }));
