@@ -50,7 +50,6 @@ public class UdpReceiverTask implements Runnable {
                 receiverListener.didReceiveData(base64Data, address.getHostAddress(), packet.getPort());
             } catch(java.net.SocketTimeoutException timeout) {                                              // receive timed-out, needed to get out of the loop when socket gets closed
                 continue;
-            }
             } catch (IOException ioe) {
                 if (receiverListener != null) {
                     receiverListener.didReceiveError(ioe.getMessage());
