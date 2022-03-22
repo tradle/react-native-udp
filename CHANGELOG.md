@@ -1,3 +1,11 @@
+## [4.1.5](https://github.com/tradle/react-native-udp/compare/v4.1.4...v4.1.5) (2022-03-22)
+
+
+### Bug Fixes
+
+* Fix Gradle configuration ([#205](https://github.com/tradle/react-native-udp/issues/205)) ([c5c7831](https://github.com/tradle/react-native-udp/commit/c5c783188563e9eb04370001e702993b650d6c13))
+* **Android:** Catch all exceptions and redirect them to JS ([#202](https://github.com/tradle/react-native-udp/issues/202)) ([0a512ee](https://github.com/tradle/react-native-udp/commit/0a512ee84f7370af1842907c08d79ace29fc2019))
+
 ## [4.1.4](https://github.com/tradle/react-native-udp/compare/v4.1.3...v4.1.4) (2022-02-22)
 
 
