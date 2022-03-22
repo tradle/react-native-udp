@@ -1,9 +1,10 @@
+ OSX
+#
+.DS_Store
+
 # Xcode
-!**/*.xcodeproj
-!**/*.pbxproj
-!**/*.xcworkspacedata
-!**/*.xcsettings
-!**/*.xcscheme
+#
+build/
 *.pbxuser
 !default.pbxuser
 *.mode1v3
@@ -19,22 +20,33 @@ DerivedData
 *.hmap
 *.ipa
 *.xcuserstate
-project.xcworkspace
+*.xcworkspace
+/ios/Pods/
 
-# Xcode, Gradle
+# Android/IntelliJ
+#
 build/
-
-# Android
 .idea
 .gradle
 local.properties
 *.iml
+android/gradle/
+android/gradlew
+android/gradlew.bat
 
-# Node
-node_modules
-*.log
-.nvm
+# node.js
+#
+node_modules/
+npm-debug.log
+yarn-error.log
 
-# OS X
-.DS_Store
-/.vscode
+# BUCK
+buck-out/
+\.buckd/
+*.keystore
+
+# Editor config
+.vscode
+
+# Tests
+coverage
