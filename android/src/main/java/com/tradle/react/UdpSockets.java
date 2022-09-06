@@ -3,9 +3,6 @@ package com.tradle.react;
 import android.content.Context;
 import android.net.wifi.WifiManager;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import android.util.SparseArray;
 
 import com.facebook.common.logging.FLog;
@@ -25,6 +22,9 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
  * The NativeModule in charge of storing active {@link UdpSocketClient}s, and acting as an api layer.
  */
@@ -41,7 +41,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
         super(reactContext);
     }
 
-    @NonNull
+    @Nonnull
     @Override
     public String getName() {
         return TAG;

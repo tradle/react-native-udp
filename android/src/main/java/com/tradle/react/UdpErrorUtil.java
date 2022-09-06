@@ -7,10 +7,10 @@
 
 package com.tradle.react;
 
-import javax.annotation.Nullable;
-
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
+
+import javax.annotation.Nullable;
 
 /**
  * Helper class for udp errors.
