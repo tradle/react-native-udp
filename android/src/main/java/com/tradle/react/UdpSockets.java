@@ -74,7 +74,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
             if (callback == null) {
                 FLog.e(TAG, "missing callback parameter.");
             } else {
-                callback.invoke(UdpErrorUtil.getError(null, "no client found with id " + cId), null);
+                callback.invoke(UdpErrorUtil.getError(UdpErrorCodes.clientNotFound.name(), "no client found with id " + cId), null);
             }
         }
 
@@ -123,7 +123,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                     callback.invoke(null, result);
                 } catch (Exception e) {
                     // Socket is already bound or a problem occurred during binding
-                    callback.invoke(UdpErrorUtil.getError(null, e.getMessage()));
+                    callback.invoke(UdpErrorUtil.getError(UdpErrorCodes.socketAlreadyBoundError.name(), e.getMessage()));
                 }
             }
         }));
@@ -221,7 +221,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                 try {
                     client.send(base64String, port, address, callback);
                 } catch (Exception exception) {
-                    callback.invoke((UdpErrorUtil.getError(null, exception.getMessage())));
+                    callback.invoke((UdpErrorUtil.getError(UdpErrorCodes.sendError.name(), exception.getMessage())));
                 }
             }
         }));
@@ -268,7 +268,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                     client.setBroadcast(flag);
                     callback.invoke();
                 } catch (SocketException e) {
-                    callback.invoke(UdpErrorUtil.getError(null, e.getMessage()));
+                    callback.invoke(UdpErrorUtil.getError(UdpErrorCodes.setBroadcast.name(), e.getMessage()));
                 }
             }
         }));

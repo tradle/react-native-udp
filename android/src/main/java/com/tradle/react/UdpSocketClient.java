@@ -225,7 +225,7 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
         }
 
         if (callback != null) {
-            callback.invoke(UdpErrorUtil.getError(null, error));
+            callback.invoke(UdpErrorUtil.getError(UdpErrorCodes.sendError.name(), error));
         }
     }
 
