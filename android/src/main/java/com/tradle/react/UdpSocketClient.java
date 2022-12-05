@@ -1,6 +1,5 @@
 package com.tradle.react;
 
-import androidx.annotation.Nullable;
 import android.util.Base64;
 
 import com.facebook.react.bridge.Callback;
@@ -17,9 +16,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import static com.tradle.react.UdpSenderTask.OnDataSentListener;
+
+import javax.annotation.Nullable;
 
 /**
  * Client class that wraps a sender and a receiver for UDP data.
@@ -225,7 +225,7 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
         }
 
         if (callback != null) {
-            callback.invoke(UdpErrorUtil.getError(null, error));
+            callback.invoke(UdpErrorUtil.getError(UdpErrorCodes.sendError.name(), error));
         }
     }
 

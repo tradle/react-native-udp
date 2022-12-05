@@ -7,10 +7,10 @@
 
 package com.tradle.react;
 
-import javax.annotation.Nullable;
-
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
+
+import javax.annotation.Nonnull;
 
 /**
  * Helper class for udp errors.
@@ -19,12 +19,10 @@ public class UdpErrorUtil {
     /**
      * Create Error object to be passed back to the JS callback.
      */
-    /* package */ static WritableMap getError(@Nullable String key, String errorMessage) {
-        WritableMap errorMap = Arguments.createMap();
+    /* package */ static WritableMap getError(@Nonnull String key, String errorMessage) {
+        final WritableMap errorMap = Arguments.createMap();
+        errorMap.putString("key", key);
         errorMap.putString("message", errorMessage);
-        if (key != null) {
-            errorMap.putString("key", key);
-        }
         return errorMap;
     }
 }
