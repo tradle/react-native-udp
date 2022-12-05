@@ -1,3 +1,10 @@
+## [4.1.6](https://github.com/tradle/react-native-udp/compare/v4.1.5...v4.1.6) (2022-12-05)
+
+
+### Bug Fixes
+
+* **Android:** Update Android code ([#220](https://github.com/tradle/react-native-udp/issues/220)) ([e5cb016](https://github.com/tradle/react-native-udp/commit/e5cb016e55133a2683b695b4dfed68cb72252948))
+
 ## [4.1.5](https://github.com/tradle/react-native-udp/compare/v4.1.4...v4.1.5) (2022-03-22)
 
 
