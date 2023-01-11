@@ -1,8 +1,14 @@
 import { EventEmitter } from 'events'
 import { Buffer } from 'buffer'
 import { DeviceEventEmitter, NativeModules } from 'react-native'
-const Sockets = NativeModules.UdpSockets
 import normalizeBindOptions from './normalizeBindOptions'
+
+const isTurboModuleEnabled = global.__turboModuleProxy != null
+
+const Sockets = isTurboModuleEnabled
+  ? require('./NativeUdpSockets').default
+  : NativeModules.UdpSockets
+
 let instances = 0
 const STATE = {
   UNBOUND: 0,
