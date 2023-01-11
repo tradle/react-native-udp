@@ -2,7 +2,9 @@ package com.tradle.react;
 
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.Callback;
+import javax.annotation.Nullable;
 
 public abstract class UdpSocketsSpec extends ReactContextBaseJavaModule {
     UdpSocketsSpec(ReactApplicationContext context) {
