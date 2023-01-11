@@ -79,7 +79,7 @@
     "type": "modules",
     "jsSrcsDir": "src",
     "android": {
-      "javaPackageName": "UdpSocketsSpec"
+      "javaPackageName": "com.tradle.react"
     }
   }
 }

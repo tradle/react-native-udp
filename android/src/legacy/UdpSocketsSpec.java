@@ -11,23 +11,23 @@ public abstract class UdpSocketsSpec extends ReactContextBaseJavaModule {
         super(context);
     }
 
-    public abstract void createSocket(final Integer cId, final ReadableMap options);
+    public abstract void createSocket(double cId, ReadableMap options);
     public abstract void bind(
-        final Integer cId,
-        final Integer port,
-        final @Nullable String address,
-        final @Nullable ReadableMap options,
-        final Callback callback
+        double cId,
+        double port,
+        @Nullable String address,
+        @Nullable ReadableMap options,
+        Callback callback
     );
-    public abstract void addMembership(final Integer cId, final String multicastAddress);
-    public abstract void dropMembership(final Integer cId, final String multicastAddress);
+    public abstract void addMembership(double cId, String multicastAddress);
+    public abstract void dropMembership(double cId, String multicastAddress);
     public abstract void send(
-        final Integer cId,
-        final String base64String,
-        final Integer port,
-        final String address,
-        final Callback callback
+        double cId,
+        String base64String,
+        double port,
+        String address,
+        Callback callback
     );
-    public abstract void close(final Integer cId, final Callback callback);
-    public abstract void setBroadcast(final Integer cId, final Boolean flag, final Callback callback);
+    public abstract void close(double cId, Callback callback);
+    public abstract void setBroadcast(double cId, Boolean flag, Callback callback);
 }
