@@ -11,18 +11,18 @@
 #import "GCDAsyncUdpSocket.h"
 #import "UdpSocketClient.h"
 #import <React/RCTBridge.h>
-#import <React/RCTEventDispatcher.h>
+#import <React/RCTEventEmitter.h>
 
 #ifdef RCT_NEW_ARCH_ENABLED
 
 #import <UdpSocketsSpec/UdpSocketsSpec.h>
 
-@interface UdpSockets : NSObject <NativeUdpSocketsSpec>
+@interface UdpSockets : RCTEventEmitter<NativeUdpSocketsSpec>
 #else
 
 #import <React/RCTBridgeModule.h>
 
-@interface UdpSockets : NSObject<SocketClientDelegate, RCTBridgeModule>
+@interface UdpSockets : RCTEventEmitter<SocketClientDelegate, RCTBridgeModule>
 #endif
 
 @end

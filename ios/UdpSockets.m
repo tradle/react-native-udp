@@ -23,6 +23,12 @@ RCT_EXPORT_MODULE()
 
 @synthesize bridge = _bridge;
 
+
+- (NSArray<NSString *> *)supportedEvents
+{
+    return @[@"message"];
+}
+
 - (void)dealloc
 {
     for (NSNumber *cId in _clients.allKeys) {
@@ -130,13 +136,14 @@ RCT_EXPORT_METHOD(dropMembership:(double)cId
     long ts = (long)([[NSDate date] timeIntervalSince1970] * 1000);
     NSNumber *clientID = [[_clients allKeysForObject:client] objectAtIndex:0];
     NSString *base64String = [data base64EncodedStringWithOptions:0];
-    [self.bridge.eventDispatcher sendDeviceEventWithName:[NSString stringWithFormat:@"udp-%@-data", clientID]
-                                                    body:@{
-                                                           @"data": base64String,
-                                                           @"address": host,
-                                                           @"port": [NSNumber numberWithInt:port],
-                                                           @"ts": [[NSNumber numberWithLong: ts] stringValue]
-                                                           }
+    [self sendEventWithName:@"message"
+                       body:@{
+                           @"id": clientID,
+                           @"data": base64String,
+                           @"address": host,
+                           @"port": [NSNumber numberWithInt:port],
+                           @"ts": [[NSNumber numberWithLong: ts] stringValue]
+                           }
      ];
 }
 

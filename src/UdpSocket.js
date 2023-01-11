@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import { Buffer } from 'buffer'
-import { DeviceEventEmitter, NativeModules } from 'react-native'
+import { NativeEventEmitter, NativeModules } from 'react-native'
 import normalizeBindOptions from './normalizeBindOptions'
 
 const isTurboModuleEnabled = global.__turboModuleProxy != null
@@ -15,6 +15,8 @@ const STATE = {
   BINDING: 1,
   BOUND: 2,
 }
+
+const nativeEventEmitter = Sockets && new NativeEventEmitter(Sockets)
 
 /**
  * @typedef {"ascii" | "utf8" | "utf-8" | "utf16le" | "ucs2" | "ucs-2" | "base64" | "latin1" | "binary" | "hex"} BufferEncoding
@@ -45,8 +47,8 @@ export default class UdpSocket extends EventEmitter {
     /** @private */
     this._port = -1
     /** @private */
-    this._subscription = DeviceEventEmitter.addListener(
-      `udp-${this._id}-data`,
+    this._subscription = nativeEventEmitter.addListener(
+      'message',
       this._onReceive.bind(this)
     )
     if (onmessage) this.on('message', onmessage)
@@ -172,6 +174,7 @@ export default class UdpSocket extends EventEmitter {
    * @param {{ data: string; address: string; port: number; ts: number; }} info
    */
   _onReceive(info) {
+		if (info.id !== this._id) return
     // from base64 string
     const buf = Buffer.from(info.data, 'base64')
     const rinfo = {

@@ -275,6 +275,12 @@ public final class UdpSockets extends UdpSocketsSpec
         }));
     }
 
+		@Override
+	  public void addListener(String eventName) {}
+
+		@Override
+	  public void removeListeners(double count) {}
+
     /**
      * Notifies the javascript layer upon data receipt.
      */
@@ -298,6 +304,7 @@ public final class UdpSockets extends UdpSocketsSpec
                 }
 
                 WritableMap eventParams = Arguments.createMap();
+                eventParams.putInt("id", clientID);
                 eventParams.putString("data", data);
                 eventParams.putString("address", host);
                 eventParams.putInt("port", port);
@@ -307,7 +314,7 @@ public final class UdpSockets extends UdpSocketsSpec
                 ReactContext reactContext = UdpSockets.this.getReactApplicationContext();
                 reactContext
                         .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                        .emit("udp-" + clientID + "-data", eventParams);
+                        .emit("message", eventParams);
             }
         }));
     }
