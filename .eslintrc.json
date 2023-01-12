@@ -1,6 +1,6 @@
 {
-    "parser": "babel-eslint",
-    "plugins": ["prettier", "jest"],
+    "parser": "@babel/eslint-parser",
+    "plugins": ["ft-flow", "prettier", "jest"],
     "env": {
         "es6": true,
         "node": true,

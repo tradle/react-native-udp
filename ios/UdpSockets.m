@@ -23,6 +23,20 @@ RCT_EXPORT_MODULE()
 
 @synthesize bridge = _bridge;
 
+
+- (NSArray<NSString *> *)supportedEvents
+{
+    return @[@"UdpSocketMessage"];
+}
+
+- (void)startObserving
+{
+}
+
+- (void)stopObserving
+{
+}
+
 - (void)dealloc
 {
     for (NSNumber *cId in _clients.allKeys) {
@@ -30,13 +44,9 @@ RCT_EXPORT_MODULE()
     }
 }
 
-
-RCT_EXPORT_METHOD(createSocket:(nonnull NSNumber*)cId withOptions:(NSDictionary*)options)
+RCT_EXPORT_METHOD(createSocket:(double)idNum withOptions:(NSDictionary*)options)
 {
-    if (!cId) {
-        RCTLogError(@"%@.createSocket called with nil id parameter.", [self class]);
-        return;
-    }
+    NSNumber *cId = [NSNumber numberWithInt:idNum];
 
     if (!_clients) {
         _clients = [NSMutableDictionary new];
@@ -50,12 +60,13 @@ RCT_EXPORT_METHOD(createSocket:(nonnull NSNumber*)cId withOptions:(NSDictionary*
     _clients[cId] = [UdpSocketClient socketClientWithConfig:self];
 }
 
-RCT_EXPORT_METHOD(bind:(nonnull NSNumber*)cId
-                  port:(int)port
+RCT_EXPORT_METHOD(bind:(double)idNum
+                  port:(double)port
                   address:(NSString *)address
                   options:(NSDictionary *)options
                   callback:(RCTResponseSenderBlock)callback)
 {
+    NSNumber *cId = [NSNumber numberWithInt:idNum];
     UdpSocketClient* client = [self findClient:cId callback:callback];
     if (!client) return;
 
@@ -70,28 +81,31 @@ RCT_EXPORT_METHOD(bind:(nonnull NSNumber*)cId
     callback(@[[NSNull null], [client address]]);
 }
 
-RCT_EXPORT_METHOD(send:(nonnull NSNumber*)cId
+RCT_EXPORT_METHOD(send:(double)idNum
                   string:(NSString*)base64String
-                  port:(int)port
+                  port:(double)port
                   address:(NSString*)address
                   callback:(RCTResponseSenderBlock)callback) {
+    NSNumber *cId = [NSNumber numberWithInt:idNum];
     UdpSocketClient* client = [self findClient:cId callback:callback];
     if (!client) return;
 
     // iOS7+
     // TODO: use https://github.com/nicklockwood/Base64 for compatibility with earlier iOS versions
     NSData *data = [[NSData alloc] initWithBase64EncodedString:base64String options:0];
-    [client send:data remotePort:port remoteAddress:address callback:callback];
+    [client send:data remotePort:(int)port remoteAddress:address callback:callback];
 }
 
-RCT_EXPORT_METHOD(close:(nonnull NSNumber*)cId
+RCT_EXPORT_METHOD(close:(double)idNum
                   callback:(RCTResponseSenderBlock)callback) {
+    NSNumber *cId = [NSNumber numberWithInt:idNum];
     [self closeClient:cId callback:callback];
 }
 
-RCT_EXPORT_METHOD(setBroadcast:(nonnull NSNumber*)cId
+RCT_EXPORT_METHOD(setBroadcast:(double)idNum
                   flag:(BOOL)flag
                   callback:(RCTResponseSenderBlock)callback) {
+    NSNumber *cId = [NSNumber numberWithInt:idNum];
     UdpSocketClient* client = [self findClient:cId callback:callback];
     if (!client) return;
 
@@ -105,9 +119,10 @@ RCT_EXPORT_METHOD(setBroadcast:(nonnull NSNumber*)cId
     callback(@[[NSNull null]]);
 }
 
-RCT_EXPORT_METHOD(addMembership:(nonnull NSNumber*)cId
+RCT_EXPORT_METHOD(addMembership:(double)idNum
                   multicastAddress:(NSString *)address) {
-     UdpSocketClient *client = _clients[cId];
+    NSNumber *cId = [NSNumber numberWithInt:idNum];
+    UdpSocketClient *client = _clients[cId];
     
     if (!client) return;
     
@@ -115,8 +130,9 @@ RCT_EXPORT_METHOD(addMembership:(nonnull NSNumber*)cId
     [client joinMulticastGroup:address error:&error];
 }
 
-RCT_EXPORT_METHOD(dropMembership:(nonnull NSNumber*)cId
+RCT_EXPORT_METHOD(dropMembership:(double)idNum
                   multicastAddress:(NSString *)address) {
+    NSNumber *cId = [NSNumber numberWithInt:idNum];
     UdpSocketClient *client = _clients[cId];
     
     if (!client) return;
@@ -127,20 +143,22 @@ RCT_EXPORT_METHOD(dropMembership:(nonnull NSNumber*)cId
 
 - (void) onData:(UdpSocketClient*) client data:(NSData *)data host:(NSString *)host port:(uint16_t)port
 {
+    if (!self.callableJSModules) return;
     long ts = (long)([[NSDate date] timeIntervalSince1970] * 1000);
     NSNumber *clientID = [[_clients allKeysForObject:client] objectAtIndex:0];
     NSString *base64String = [data base64EncodedStringWithOptions:0];
-    [self.bridge.eventDispatcher sendDeviceEventWithName:[NSString stringWithFormat:@"udp-%@-data", clientID]
-                                                    body:@{
-                                                           @"data": base64String,
-                                                           @"address": host,
-                                                           @"port": [NSNumber numberWithInt:port],
-                                                           @"ts": [[NSNumber numberWithLong: ts] stringValue]
-                                                           }
+    [self sendEventWithName:@"UdpSocketMessage"
+                       body:@{
+                            @"id": clientID,
+                            @"data": base64String,
+                            @"address": host,
+                            @"port": [NSNumber numberWithInt:port],
+                            @"ts": [[NSNumber numberWithLong: ts] stringValue]
+                            }
      ];
 }
 
--(UdpSocketClient*)findClient:(nonnull NSNumber*)cId callback:(RCTResponseSenderBlock)callback
+-(UdpSocketClient*)findClient:(NSNumber *)cId callback:(RCTResponseSenderBlock)callback
 {
     UdpSocketClient *client = _clients[cId];
     if (!client) {
@@ -157,7 +175,7 @@ RCT_EXPORT_METHOD(dropMembership:(nonnull NSNumber*)cId
     return client;
 }
 
--(void) closeClient:(nonnull NSNumber*)cId
+-(void) closeClient:(NSNumber *)cId
            callback:(RCTResponseSenderBlock)callback
 {
     UdpSocketClient* client = [self findClient:cId callback:callback];
@@ -169,5 +187,13 @@ RCT_EXPORT_METHOD(dropMembership:(nonnull NSNumber*)cId
 
     if (callback) callback(@[]);
 }
+
+#ifdef RCT_NEW_ARCH_ENABLED
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
+    (const facebook::react::ObjCTurboModule::InitParams &)params
+{
+    return std::make_shared<facebook::react::NativeUdpSocketsSpecJSI>(params);
+}
+#endif
 
 @end

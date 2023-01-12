@@ -10,7 +10,6 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
@@ -28,9 +27,9 @@ import javax.annotation.Nullable;
 /**
  * The NativeModule in charge of storing active {@link UdpSocketClient}s, and acting as an api layer.
  */
-public final class UdpSockets extends ReactContextBaseJavaModule
+public final class UdpSockets extends UdpSocketsSpec
         implements UdpSocketClient.OnDataReceivedListener, UdpSocketClient.OnRuntimeExceptionListener {
-    private static final String TAG = "UdpSockets";
+    public static final String TAG = "UdpSockets";
     private static final int N_THREADS = 2;
 
     private WifiManager.MulticastLock mMulticastLock;
@@ -68,8 +67,8 @@ public final class UdpSockets extends ReactContextBaseJavaModule
     /**
      * Private method to retrieve clients.
      */
-    private UdpSocketClient findClient(final Integer cId, final Callback callback) {
-        final UdpSocketClient client = mClients.get(cId);
+    private UdpSocketClient findClient(final double cId, final Callback callback) {
+        final UdpSocketClient client = mClients.get((int)cId);
         if (client == null) {
             if (callback == null) {
                 FLog.e(TAG, "missing callback parameter.");
@@ -84,26 +83,23 @@ public final class UdpSockets extends ReactContextBaseJavaModule
     /**
      * Creates a {@link UdpSocketClient} with the given ID, and options
      */
+    @Override
     @ReactMethod
-    public void createSocket(final Integer cId, final ReadableMap options) {
-        if (cId == null) {
-            FLog.e(TAG, "createSocket called with nil id parameter.");
-            return;
-        }
-
-        UdpSocketClient client = mClients.get(cId);
+    public void createSocket(final double cId, final ReadableMap options) {
+        UdpSocketClient client = mClients.get((int)cId);
         if (client != null) {
             FLog.e(TAG, "createSocket called twice with the same id.");
             return;
         }
-        mClients.put(cId, new UdpSocketClient(this, this));
+        mClients.put((int)cId, new UdpSocketClient(this, this));
     }
 
     /**
      * Binds to a given port and address, and begins listening for data.
      */
+    @Override
     @ReactMethod
-    public void bind(final Integer cId, final Integer port, final @Nullable String address, final @Nullable ReadableMap options,
+    public void bind(final double cId, final double port, final @Nullable String address, final @Nullable ReadableMap options,
                      final Callback callback) {
         executorService.execute(new Thread(new Runnable() {
             @Override
@@ -114,11 +110,11 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                 }
 
                 try {
-                    client.bind(port, address);
+                    client.bind((int)port, address);
 
                     WritableMap result = Arguments.createMap();
                     result.putString("address", address);
-                    result.putInt("port", port);
+                    result.putInt("port", (int)port);
 
                     callback.invoke(null, result);
                 } catch (Exception e) {
@@ -132,9 +128,10 @@ public final class UdpSockets extends ReactContextBaseJavaModule
     /**
      * Joins a multi-cast group
      */
+    @Override
     @SuppressWarnings("unused")
     @ReactMethod
-    public void addMembership(final Integer cId, final String multicastAddress) {
+    public void addMembership(final double cId, final String multicastAddress) {
         executorService.execute(new Thread(new Runnable() {
             @Override
             public void run() {
@@ -180,8 +177,9 @@ public final class UdpSockets extends ReactContextBaseJavaModule
     /**
      * Leaves a multi-cast group
      */
+    @Override
     @ReactMethod
-    public void dropMembership(final Integer cId, final String multicastAddress) {
+    public void dropMembership(final double cId, final String multicastAddress) {
         executorService.execute(new Thread(new Runnable() {
             @Override
             public void run() {
@@ -207,9 +205,10 @@ public final class UdpSockets extends ReactContextBaseJavaModule
     /**
      * Sends udp data via the {@link UdpSocketClient}
      */
+    @Override
     @ReactMethod
-    public void send(final Integer cId, final String base64String,
-                     final Integer port, final String address, final Callback callback) {
+    public void send(final double cId, final String base64String,
+                     final double port, final String address, final Callback callback) {
         executorService.execute(new Thread(new Runnable() {
             @Override
             public void run() {
@@ -219,7 +218,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                 }
 
                 try {
-                    client.send(base64String, port, address, callback);
+                    client.send(base64String, (int)port, address, callback);
                 } catch (Exception exception) {
                     callback.invoke((UdpErrorUtil.getError(UdpErrorCodes.sendError.name(), exception.getMessage())));
                 }
@@ -230,8 +229,9 @@ public final class UdpSockets extends ReactContextBaseJavaModule
     /**
      * Closes a specific client's socket, and removes it from the list of known clients.
      */
+    @Override
     @ReactMethod
-    public void close(final Integer cId, final Callback callback) {
+    public void close(final double cId, final Callback callback) {
         executorService.execute(new Thread(new Runnable() {
             @Override
             public void run() {
@@ -246,7 +246,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                 }
                 client.close();
                 callback.invoke();
-                mClients.remove(cId);
+                mClients.remove((int)cId);
             }
         }));
     }
@@ -254,8 +254,9 @@ public final class UdpSockets extends ReactContextBaseJavaModule
     /**
      * Sets the broadcast flag for a given client.
      */
+    @Override
     @ReactMethod
-    public void setBroadcast(final Integer cId, final Boolean flag, final Callback callback) {
+    public void setBroadcast(final double cId, final boolean flag, final Callback callback) {
         executorService.execute(new Thread(new Runnable() {
             @Override
             public void run() {
@@ -273,6 +274,12 @@ public final class UdpSockets extends ReactContextBaseJavaModule
             }
         }));
     }
+
+    @Override
+    public void addListener(String eventName) {}
+
+    @Override
+    public void removeListeners(double count) {}
 
     /**
      * Notifies the javascript layer upon data receipt.
@@ -297,6 +304,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                 }
 
                 WritableMap eventParams = Arguments.createMap();
+                eventParams.putInt("id", clientID);
                 eventParams.putString("data", data);
                 eventParams.putString("address", host);
                 eventParams.putInt("port", port);
@@ -306,7 +314,7 @@ public final class UdpSockets extends ReactContextBaseJavaModule
                 ReactContext reactContext = UdpSockets.this.getReactApplicationContext();
                 reactContext
                         .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                        .emit("udp-" + clientID + "-data", eventParams);
+                        .emit("UdpSocketMessage", eventParams);
             }
         }));
     }
