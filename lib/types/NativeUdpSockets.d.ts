@@ -11,6 +11,8 @@ export interface Spec extends TurboModule {
     send(id: number, base64String: string, port: number, address: string, callback: () => void): void;
     close(id: number, callback: () => void): void;
     setBroadcast(id: number, flag: boolean, callback: () => void): void;
+    addListener(eventType: string): void;
+    removeListeners(count: number): void;
 }
 declare const _default: Spec;
 export default _default;

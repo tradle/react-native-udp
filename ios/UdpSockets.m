@@ -26,7 +26,7 @@ RCT_EXPORT_MODULE()
 
 - (NSArray<NSString *> *)supportedEvents
 {
-    return @[@"message"];
+    return @[@"UdpSocketMessage"];
 }
 
 - (void)dealloc
@@ -136,14 +136,14 @@ RCT_EXPORT_METHOD(dropMembership:(double)cId
     long ts = (long)([[NSDate date] timeIntervalSince1970] * 1000);
     NSNumber *clientID = [[_clients allKeysForObject:client] objectAtIndex:0];
     NSString *base64String = [data base64EncodedStringWithOptions:0];
-    [self sendEventWithName:@"message"
+    [self sendEventWithName:@"UdpSocketMessage"
                        body:@{
-                           @"id": clientID,
-                           @"data": base64String,
-                           @"address": host,
-                           @"port": [NSNumber numberWithInt:port],
-                           @"ts": [[NSNumber numberWithLong: ts] stringValue]
-                           }
+                            @"id": clientID,
+                            @"data": base64String,
+                            @"address": host,
+                            @"port": [NSNumber numberWithInt:port],
+                            @"ts": [[NSNumber numberWithLong: ts] stringValue]
+                            }
      ];
 }
 

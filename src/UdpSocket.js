@@ -48,7 +48,7 @@ export default class UdpSocket extends EventEmitter {
     this._port = -1
     /** @private */
     this._subscription = nativeEventEmitter.addListener(
-      'message',
+      'UdpSocketMessage',
       this._onReceive.bind(this)
     )
     if (onmessage) this.on('message', onmessage)
@@ -171,10 +171,10 @@ export default class UdpSocket extends EventEmitter {
 
   /**
    * @private
-   * @param {{ data: string; address: string; port: number; ts: number; }} info
+   * @param {{ id: number; data: string; address: string; port: number; ts: number; }} info
    */
   _onReceive(info) {
-		if (info.id !== this._id) return
+    if (info.id !== this._id) return
     // from base64 string
     const buf = Buffer.from(info.data, 'base64')
     const rinfo = {

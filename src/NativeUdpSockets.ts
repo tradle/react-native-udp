@@ -29,9 +29,9 @@ export interface Spec extends TurboModule {
   close(id: number, callback: () => void): void;
   setBroadcast(id: number, flag: boolean, callback: () => void): void;
 
-	// RCTEventEmitter
-	addListener(eventType: string): void;
-	removeListeners(count: number): void;
+  // RCTEventEmitter
+  addListener(eventType: string): void;
+  removeListeners(count: number): void;
 }
 
 // @ts-ignore

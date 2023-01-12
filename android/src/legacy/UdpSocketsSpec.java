@@ -31,7 +31,7 @@ public abstract class UdpSocketsSpec extends ReactContextBaseJavaModule {
     public abstract void close(double cId, Callback callback);
     public abstract void setBroadcast(double cId, boolean flag, Callback callback);
 
-		// RCTEventEmitter
-		public abstract void addListener(String eventName);
-		public abstract void removeListeners(double count);
+    // RCTEventEmitter
+    public abstract void addListener(String eventName);
+    public abstract void removeListeners(double count);
 g

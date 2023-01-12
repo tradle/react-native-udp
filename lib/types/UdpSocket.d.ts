@@ -70,7 +70,7 @@ export default class UdpSocket extends EventEmitter {
     disconnect(): void;
     /**
      * @private
-     * @param {{ data: string; address: string; port: number; ts: number; }} info
+     * @param {{ id: number; data: string; address: string; port: number; ts: number; }} info
      */
     private _onReceive;
     /**
