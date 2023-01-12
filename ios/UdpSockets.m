@@ -29,6 +29,14 @@ RCT_EXPORT_MODULE()
     return @[@"UdpSocketMessage"];
 }
 
+- (void)startObserving
+{
+}
+
+- (void)stopObserving
+{
+}
+
 - (void)dealloc
 {
     for (NSNumber *cId in _clients.allKeys) {
@@ -36,13 +44,9 @@ RCT_EXPORT_MODULE()
     }
 }
 
-
-RCT_EXPORT_METHOD(createSocket:(double)cId withOptions:(NSDictionary*)options)
+RCT_EXPORT_METHOD(createSocket:(double)idNum withOptions:(NSDictionary*)options)
 {
-    if (!cId) {
-        RCTLogError(@"%@.createSocket called with nil id parameter.", [self class]);
-        return;
-    }
+    NSNumber *cId = [NSNumber numberWithInt:idNum];
 
     if (!_clients) {
         _clients = [NSMutableDictionary new];
@@ -56,12 +60,13 @@ RCT_EXPORT_METHOD(createSocket:(double)cId withOptions:(NSDictionary*)options)
     _clients[cId] = [UdpSocketClient socketClientWithConfig:self];
 }
 
-RCT_EXPORT_METHOD(bind:(double)cId
+RCT_EXPORT_METHOD(bind:(double)idNum
                   port:(double)port
                   address:(NSString *)address
                   options:(NSDictionary *)options
                   callback:(RCTResponseSenderBlock)callback)
 {
+    NSNumber *cId = [NSNumber numberWithInt:idNum];
     UdpSocketClient* client = [self findClient:cId callback:callback];
     if (!client) return;
 
@@ -76,11 +81,12 @@ RCT_EXPORT_METHOD(bind:(double)cId
     callback(@[[NSNull null], [client address]]);
 }
 
-RCT_EXPORT_METHOD(send:(double)cId
+RCT_EXPORT_METHOD(send:(double)idNum
                   string:(NSString*)base64String
                   port:(double)port
                   address:(NSString*)address
                   callback:(RCTResponseSenderBlock)callback) {
+    NSNumber *cId = [NSNumber numberWithInt:idNum];
     UdpSocketClient* client = [self findClient:cId callback:callback];
     if (!client) return;
 
@@ -90,14 +96,16 @@ RCT_EXPORT_METHOD(send:(double)cId
     [client send:data remotePort:(int)port remoteAddress:address callback:callback];
 }
 
-RCT_EXPORT_METHOD(close:(double)cId
+RCT_EXPORT_METHOD(close:(double)idNum
                   callback:(RCTResponseSenderBlock)callback) {
+    NSNumber *cId = [NSNumber numberWithInt:idNum];
     [self closeClient:cId callback:callback];
 }
 
-RCT_EXPORT_METHOD(setBroadcast:(double)cId
+RCT_EXPORT_METHOD(setBroadcast:(double)idNum
                   flag:(BOOL)flag
                   callback:(RCTResponseSenderBlock)callback) {
+    NSNumber *cId = [NSNumber numberWithInt:idNum];
     UdpSocketClient* client = [self findClient:cId callback:callback];
     if (!client) return;
 
@@ -111,9 +119,10 @@ RCT_EXPORT_METHOD(setBroadcast:(double)cId
     callback(@[[NSNull null]]);
 }
 
-RCT_EXPORT_METHOD(addMembership:(double)cId
+RCT_EXPORT_METHOD(addMembership:(double)idNum
                   multicastAddress:(NSString *)address) {
-     UdpSocketClient *client = _clients[cId];
+    NSNumber *cId = [NSNumber numberWithInt:idNum];
+    UdpSocketClient *client = _clients[cId];
     
     if (!client) return;
     
@@ -121,8 +130,9 @@ RCT_EXPORT_METHOD(addMembership:(double)cId
     [client joinMulticastGroup:address error:&error];
 }
 
-RCT_EXPORT_METHOD(dropMembership:(double)cId
+RCT_EXPORT_METHOD(dropMembership:(double)idNum
                   multicastAddress:(NSString *)address) {
+    NSNumber *cId = [NSNumber numberWithInt:idNum];
     UdpSocketClient *client = _clients[cId];
     
     if (!client) return;
@@ -133,6 +143,7 @@ RCT_EXPORT_METHOD(dropMembership:(double)cId
 
 - (void) onData:(UdpSocketClient*) client data:(NSData *)data host:(NSString *)host port:(uint16_t)port
 {
+    if (!self.callableJSModules) return;
     long ts = (long)([[NSDate date] timeIntervalSince1970] * 1000);
     NSNumber *clientID = [[_clients allKeysForObject:client] objectAtIndex:0];
     NSString *base64String = [data base64EncodedStringWithOptions:0];
@@ -147,9 +158,9 @@ RCT_EXPORT_METHOD(dropMembership:(double)cId
      ];
 }
 
--(UdpSocketClient*)findClient:(double)cId callback:(RCTResponseSenderBlock)callback
+-(UdpSocketClient*)findClient:(NSNumber *)cId callback:(RCTResponseSenderBlock)callback
 {
-    UdpSocketClient *client = _clients[(int)cId];
+    UdpSocketClient *client = _clients[cId];
     if (!client) {
         if (!callback) {
             RCTLogError(@"%@.missing callback parameter.", [self class]);
@@ -164,7 +175,7 @@ RCT_EXPORT_METHOD(dropMembership:(double)cId
     return client;
 }
 
--(void) closeClient:(double)cId
+-(void) closeClient:(NSNumber *)cId
            callback:(RCTResponseSenderBlock)callback
 {
     UdpSocketClient* client = [self findClient:cId callback:callback];

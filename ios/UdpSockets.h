@@ -17,7 +17,7 @@
 
 #import <UdpSocketsSpec/UdpSocketsSpec.h>
 
-@interface UdpSockets : RCTEventEmitter<NativeUdpSocketsSpec>
+@interface UdpSockets : RCTEventEmitter<SocketClientDelegate, NativeUdpSocketsSpec>
 #else
 
 #import <React/RCTBridgeModule.h>
