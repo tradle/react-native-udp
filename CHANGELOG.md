@@ -1,3 +1,10 @@
+## [4.1.7](https://github.com/tradle/react-native-udp/compare/v4.1.6...v4.1.7) (2023-01-26)
+
+
+### Bug Fixes
+
+* **Android:** Remove incorrect Override signature ([#241](https://github.com/tradle/react-native-udp/issues/241)) ([2578857](https://github.com/tradle/react-native-udp/commit/25788578e59a1704ea65f9d00bc6c41faaae3f3d))
+
 ## [4.1.6](https://github.com/tradle/react-native-udp/compare/v4.1.5...v4.1.6) (2022-12-05)
 
 
