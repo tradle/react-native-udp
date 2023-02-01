@@ -75,6 +75,7 @@ public final class UdpSocketClient implements UdpReceiverTask.OnDataReceivedList
 
         mSocket = new MulticastSocket(socketAddress);
         mSocket.setReuseAddress(true);
+        mSocket.setSoTimeout(500);
 
         // begin listening for data in the background
         mReceiverTask = new UdpReceiverTask(mSocket, this);
